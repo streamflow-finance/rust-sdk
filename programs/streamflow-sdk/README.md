@@ -64,7 +64,7 @@ Functionalities are:
 
 High level overview
 --
-![Overview](./misc/overview.jpeg)
+![Overview](../../misc/overview.jpeg)
 
 ## Fees
 
