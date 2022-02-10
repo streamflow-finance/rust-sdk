@@ -13,6 +13,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 pub mod streamflow_rust_sdk {
     use super::*;
 
+    #[allow(unused_variables)]
     pub fn create(
         ctx: Context<Create>,
         start_time: u64,
@@ -33,18 +34,22 @@ pub mod streamflow_rust_sdk {
         Ok(())
     }
 
+    #[allow(unused_variables)]
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> ProgramResult {
         Ok(())
     }
 
+    #[allow(unused_variables)]
     pub fn cancel(ctx: Context<Cancel>) -> ProgramResult {
         Ok(())
     }
 
+    #[allow(unused_variables)]
     pub fn transfer_recipient(ctx: Context<Transfer>) -> ProgramResult {
         Ok(())
     }
 
+    #[allow(unused_variables)]
     pub fn topup(ctx: Context<Topup>, amount: u64) -> ProgramResult {
         Ok(())
     }
