@@ -4,7 +4,7 @@ use anchor_spl::{
     token::{Mint, Token, TokenAccount},
 };
 
-use streamflow_rust_sdk::cpi::accounts::{
+use streamflow_sdk::cpi::accounts::{
     Create as CpiCreate,
     Withdraw as CpiWithdraw,
     Topup as CpiTopup,
@@ -19,7 +19,7 @@ pub mod example_program {
     use super::*;
 
     //importing parameter struct for stream/vesting contract creation
-    use streamflow_rust_sdk::CreateParams;
+    use streamflow_sdk::CreateParams;
 
     //anchor rpc handlers
     pub fn create(
@@ -84,7 +84,7 @@ pub mod example_program {
 
         // calling cpi method which calls solana_program invoke with serialized instruction data
         // fit for streamflow program
-        streamflow_rust_sdk::cpi::create(
+        streamflow_sdk::cpi::create(
             cpi_ctx,
             ix.start_time,
             ix.net_amount_deposited,
@@ -118,7 +118,7 @@ pub mod example_program {
             token_program: ctx.accounts.token_program.to_account_info(),
         };
         let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
-        streamflow_rust_sdk::cpi::withdraw(cpi_ctx, amount)
+        streamflow_sdk::cpi::withdraw(cpi_ctx, amount)
     }
 
     pub fn cancel(ctx: Context<Cancel>) -> ProgramResult {
@@ -138,7 +138,7 @@ pub mod example_program {
             token_program: ctx.accounts.token_program.to_account_info(),
         };
         let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
-        streamflow_rust_sdk::cpi::cancel(cpi_ctx)
+        streamflow_sdk::cpi::cancel(cpi_ctx)
     }
 }
 
@@ -155,7 +155,7 @@ pub fn transfer_recipient(ctx: Context<Transfer>) -> ProgramResult {
         system_program: ctx.accounts.system_program.to_account_info(),
     };
     let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
-    streamflow_rust_sdk::cpi::transfer_recipient(cpi_ctx)
+    streamflow_sdk::cpi::transfer_recipient(cpi_ctx)
 }
 
 pub fn topup(ctx: Context<Topup>, amount: u64) -> ProgramResult {
@@ -174,7 +174,7 @@ pub fn topup(ctx: Context<Topup>, amount: u64) -> ProgramResult {
         system_program: ctx.accounts.system_program.to_account_info(),
     };
     let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
-    streamflow_rust_sdk::cpi::topup(cpi_ctx, amount)
+    streamflow_sdk::cpi::topup(cpi_ctx, amount)
 }
 
 #[derive(Accounts)]

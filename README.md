@@ -6,7 +6,7 @@ SDK for Rust on-chain solana programs to interact with streamflow protocol
 Declare a dependency in your program's Cargo.toml
 
 ```
-streamflow_rust_sdk = {version = "0.1.0", features = ["cpi"]}
+streamflow_sdk = {version = "0.1.0", features = ["cpi"]}
 ```
 
 In your program's instruction which should invoke streamflow's create instruction:
@@ -14,8 +14,8 @@ In your program's instruction which should invoke streamflow's create instructio
 
 ```
 use anchor_lang::prelude::*;
-use streamflow_rust_sdk::cpi::accounts::Create
-use streamflow_rust_sdk::cpi;
+use streamflow_sdk::cpi::accounts::Create
+use streamflow_sdk::cpi;
 
 let accs = Create {
     sender: ctx.accounts.sender.to_account_info(),
@@ -27,7 +27,7 @@ let cpi_ctx = CpiContext::new(
     ctx.accounts.timelock_program.to_account_info(), accs
 );
 
-streamflow_rust_sdk::cpi::create(
+streamflow_sdk::cpi::create(
             cpi_ctx,
             start_time,
             net_amount_deposited

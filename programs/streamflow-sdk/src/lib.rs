@@ -10,7 +10,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 
 #[program]
-pub mod streamflow_rust_sdk {
+pub mod streamflow_sdk {
     use super::*;
 
     #[allow(unused_variables)]
