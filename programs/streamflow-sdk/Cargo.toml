@@ -1,6 +1,6 @@
 [package]
 name = "streamflow-sdk"
-version = "0.5.0"
+version = "0.5.1"
 license = "MIT"
 description = "Rust SDK to interact with Streamflow protocol"
 repository = "https://github.com/streamflow-finance/rust-sdk"
