@@ -1,4 +1,4 @@
-# rust-sdk
+# streamflow-sdk
 SDK for Rust on-chain solana programs to interact with streamflow protocol
 
 ## Usage
@@ -42,13 +42,14 @@ For a more detailed example, check ./programs/example/lib.rs
 
 Adresses
 ---
-Streamflow protocol program: 
 
-Streamflow fees oracle: 
+| parameter           |address|
+|---------------------|----|
+| program_id          |addr|
+| fees_oracle         |addr|
+| streamflow_treasury |5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw|
+| withdrawor          |wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u|
 
-Streamflow treasury: 5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw
-
-Streamflow withdrawor: wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u
 
 
 ## Streamflow protocol

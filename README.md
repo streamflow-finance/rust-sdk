@@ -1,4 +1,4 @@
-# rust-sdk
+# streamflow-sdk
 SDK for Rust on-chain solana programs to interact with streamflow protocol
 
 ## Usage
@@ -38,17 +38,18 @@ streamflow_sdk::cpi::create(
 
 ## Example program using sdk
 
-For a more detailed example, check ./programs/example/lib.rs 
+For a more detailed example, check ./programs/example/lib.rs
 
 Adresses
 ---
-Streamflow protocol program: 
 
-Streamflow fees oracle: 
+| parameter           |address|
+|---------------------|----|
+| program_id          |addr|
+| fees_oracle         |addr|
+| streamflow_treasury |5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw|
+| withdrawor          |wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u|
 
-Streamflow treasury: 5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw
-
-Streamflow withdrawor: wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u
 
 
 ## Streamflow protocol
@@ -64,11 +65,11 @@ Functionalities are:
 
 High level overview
 --
-![Overview](../../misc/overview.jpeg)
+![Overview](./misc/overview.jpeg)
 
 ## Fees
 
-Streamflow protocol transfer 0.25% of contract total amount (net_amount_deposit) to streamflow treasury to cover costs of building and maintaining protocl. 
+Streamflow protocol transfer 0.25% of contract total amount (net_amount_deposit) to streamflow treasury to cover costs of building and maintaining protocl.
 
 ## Registering as partner on streamflow protocol
 
