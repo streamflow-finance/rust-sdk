@@ -5,14 +5,14 @@ SDK for Rust on-chain solana programs to interact with streamflow protocol
 
 Declare a dependency in your program's Cargo.toml
 
-```
+```rust
 streamflow_sdk = {version = "0.5.2", features = ["cpi"]}
 ```
 
 In your program's instruction which should invoke streamflow's create instruction:
 
 
-```
+```rust
 use anchor_lang::prelude::*;
 use streamflow_sdk::cpi::accounts::Create
 use streamflow_sdk::cpi;
@@ -69,8 +69,8 @@ High level overview
 
 ## Fees
 
-Streamflow protocol transfer 0.25% of contract total amount (net_amount_deposit) to streamflow treasury to cover costs of building and maintaining protocl.
+Streamflow protocol transfer 0.25% of contract total amount (net_amount_deposit) to streamflow treasury to cover costs of building and maintaining protocol.
 
 ## Registering as partner on streamflow protocol
 
-Streamflow protocol supports integrating partner fees for other protocols built on top of streamflow. For more information, reach us out on discord. <link>link</link>
+Streamflow protocol supports integrating partner fees for other protocols built on top of streamflow. For more information, reach us out on discord. https://discord.gg/NPxw3m4pzt
