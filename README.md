@@ -63,6 +63,12 @@ Functionalities are:
 - `cancel` a vesting contract.
 - `transfer_recipient` of a vesting contract.
 
+**Security audit passed ✅**
+
+Protocol audit available [here](https://github.com/streamflow-finance/rust-sdk/blob/main/protocol_audit.pdf).
+
+Partner oracle audit available here [here](https://github.com/streamflow-finance/rust-sdk/blob/main/partner_oracle_audit.pdf).
+
 High level overview
 --
 ![Overview](./misc/overview.jpeg)
