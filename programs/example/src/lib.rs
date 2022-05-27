@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::Result;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
@@ -6,6 +7,7 @@ use anchor_spl::{
 
 use streamflow_sdk::cpi::accounts::{
     Create as CpiCreate,
+    CreateUnchecked as CpiCreateUnchecked,
     Withdraw as CpiWithdraw,
     Topup as CpiTopup,
     Transfer as CpiTransfer,
@@ -19,7 +21,7 @@ pub mod example_program {
     use super::*;
 
     //importing parameter struct for stream/vesting contract creation
-    use streamflow_sdk::CreateParams;
+    use streamflow_sdk::{CreateParams, CreateParamsUnchecked};
 
     //anchor rpc handlers
     pub fn create(
@@ -38,7 +40,7 @@ pub mod example_program {
         can_topup: bool,
         stream_name: [u8; 64],
         withdraw_frequency: u64,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let ix = CreateParams {
             start_time,
             net_amount_deposited,
@@ -72,7 +74,7 @@ pub mod example_program {
             mint: ctx.accounts.mint.to_account_info(),
             fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
             rent: ctx.accounts.rent.to_account_info(),
-            timelock_program: ctx.accounts.timelock_program.to_account_info(),
+            streamflow_program: ctx.accounts.streamflow_program.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
             associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
@@ -80,7 +82,7 @@ pub mod example_program {
 
         // initializing anchor CpiContext, can be used in native solana programs as well
         // additional reference: https://project-serum.github.io/anchor/tutorials/tutorial-3.html
-        let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
 
         // calling cpi method which calls solana_program invoke with serialized instruction data
         // fit for streamflow program
@@ -103,7 +105,87 @@ pub mod example_program {
         )
     }
 
-    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> ProgramResult {
+    //anchor rpc handlers
+    pub fn create_unchecked(
+        ctx: Context<CreateUnchecked>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey
+    ) -> Result<()> {
+        let ix = CreateParamsUnchecked {
+            start_time,
+            net_amount_deposited,
+            period,
+            amount_per_period,
+            cliff,
+            cliff_amount,
+            cancelable_by_sender,
+            cancelable_by_recipient,
+            automatic_withdrawal,
+            transferable_by_sender,
+            transferable_by_recipient,
+            can_topup,
+            stream_name,
+            withdraw_frequency,
+            recipient,
+            partner
+        };
+        // initializing accounts struct for cross-program invoke
+        let accs = CpiCreateUnchecked {
+            sender: ctx.accounts.sender.to_account_info(),
+            sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
+            metadata: ctx.accounts.metadata.to_account_info(),
+            escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
+            withdrawor: ctx.accounts.withdrawor.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
+            rent: ctx.accounts.rent.to_account_info(),
+            streamflow_program: ctx.accounts.streamflow_program.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        };
+
+        // initializing anchor CpiContext, can be used in native solana programs as well
+        // additional reference: https://project-serum.github.io/anchor/tutorials/tutorial-3.html
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+
+        // calling cpi method which calls solana_program invoke with serialized instruction data
+        // fit for streamflow program
+        streamflow_sdk::cpi::create_unchecked(
+            cpi_ctx,
+            ix.start_time,
+            ix.net_amount_deposited,
+            ix.period,
+            ix.amount_per_period,
+            ix.cliff,
+            ix.cliff_amount,
+            ix.cancelable_by_sender,
+            ix.cancelable_by_recipient,
+            ix.automatic_withdrawal,
+            ix.transferable_by_sender,
+            ix.transferable_by_recipient,
+            ix.can_topup,
+            ix.stream_name,
+            ix.withdraw_frequency,
+            ix.recipient,
+            ix.partner
+        )
+    }
+
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         let accs = CpiWithdraw {
             authority: ctx.accounts.authority.to_account_info(),
             recipient: ctx.accounts.recipient.to_account_info(),
@@ -117,11 +199,11 @@ pub mod example_program {
             mint: ctx.accounts.mint.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         };
-        let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
         streamflow_sdk::cpi::withdraw(cpi_ctx, amount)
     }
 
-    pub fn cancel(ctx: Context<Cancel>) -> ProgramResult {
+    pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
         let accs = CpiCancel {
             authority: ctx.accounts.authority.to_account_info(),
             sender: ctx.accounts.sender.to_account_info(),
@@ -137,12 +219,12 @@ pub mod example_program {
             mint: ctx.accounts.mint.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         };
-        let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
         streamflow_sdk::cpi::cancel(cpi_ctx)
     }
 }
 
-pub fn transfer_recipient(ctx: Context<Transfer>) -> ProgramResult {
+pub fn transfer_recipient(ctx: Context<Transfer>) -> Result<()> {
     let accs = CpiTransfer {
         authority: ctx.accounts.authority.to_account_info(),
         new_recipient: ctx.accounts.new_recipient.to_account_info(),
@@ -154,11 +236,11 @@ pub fn transfer_recipient(ctx: Context<Transfer>) -> ProgramResult {
         associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
         system_program: ctx.accounts.system_program.to_account_info(),
     };
-    let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+    let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
     streamflow_sdk::cpi::transfer_recipient(cpi_ctx)
 }
 
-pub fn topup(ctx: Context<Topup>, amount: u64) -> ProgramResult {
+pub fn topup(ctx: Context<Topup>, amount: u64) -> Result<()> {
     let accs = CpiTopup {
         sender: ctx.accounts.sender.to_account_info(),
         sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
@@ -173,7 +255,7 @@ pub fn topup(ctx: Context<Topup>, amount: u64) -> ProgramResult {
         token_program: ctx.accounts.token_program.to_account_info(),
         system_program: ctx.accounts.system_program.to_account_info(),
     };
-    let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+    let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
     streamflow_sdk::cpi::topup(cpi_ctx, amount)
 }
 
@@ -204,9 +286,29 @@ pub struct Create<'info> {
     pub mint: Account<'info, Mint>,
     pub fee_oracle: AccountInfo<'info>,
     pub rent: Sysvar<'info, Rent>,
-    pub timelock_program: AccountInfo<'info>,
+    pub streamflow_program: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CreateUnchecked<'info> {
+    #[account(mut)]
+    pub sender: Signer<'info>,
+    #[account(mut)]
+    pub sender_tokens: AccountInfo<'info>,
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    #[account(mut)]
+    pub escrow_tokens: AccountInfo<'info>,
+    #[account(mut)]
+    pub withdrawor: AccountInfo<'info>,
+    pub mint: Account<'info, Mint>,
+    pub fee_oracle: AccountInfo<'info>,
+    pub rent: Sysvar<'info, Rent>,
+    pub streamflow_program: AccountInfo<'info>,
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
@@ -231,7 +333,7 @@ pub struct Withdraw<'info> {
     #[account(mut)]
     pub partner_tokens: AccountInfo<'info>,
     pub mint: Account<'info, Mint>,
-    pub timelock_program: AccountInfo<'info>,
+    pub streamflow_program: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
 }
 
@@ -260,7 +362,7 @@ pub struct Cancel<'info> {
     #[account(mut)]
     pub partner_tokens: AccountInfo<'info>,
     pub mint: Account<'info, Mint>,
-    pub timelock_program: AccountInfo<'info>,
+    pub streamflow_program: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
 }
 
@@ -276,7 +378,7 @@ pub struct Transfer<'info> {
     pub metadata: AccountInfo<'info>,
     pub mint: Account<'info, Mint>,
     pub rent: Sysvar<'info, Rent>,
-    pub timelock_program: AccountInfo<'info>,
+    pub streamflow_program: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
@@ -303,7 +405,7 @@ pub struct Topup<'info> {
     #[account(mut)]
     pub partner_tokens: AccountInfo<'info>,
     pub mint: Account<'info, Mint>,
-    pub timelock_program: AccountInfo<'info>,
+    pub streamflow_program: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
