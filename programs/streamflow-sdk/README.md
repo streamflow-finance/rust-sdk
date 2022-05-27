@@ -24,7 +24,7 @@ let accs = Create {
 }
 
 let cpi_ctx = CpiContext::new(
-    ctx.accounts.timelock_program.to_account_info(), accs
+    ctx.accounts.streamflow_program.to_account_info(), accs
 );
 
 streamflow_sdk::cpi::create(
