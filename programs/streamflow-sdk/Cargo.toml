@@ -11,6 +11,6 @@ no-entrypoint = []
 cpi = ["no-entrypoint"]
 
 [dependencies]
-anchor-lang = "0.24.2"
-anchor-spl = "0.24.2"
+anchor-lang = "^0.24.2"
+anchor-spl = "^0.24.2"
 borsh = "0.9.1"
