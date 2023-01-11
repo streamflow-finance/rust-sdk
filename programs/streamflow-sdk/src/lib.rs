@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::entrypoint::ProgramResult;
 
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
 };
-
 use borsh::{BorshDeserialize, BorshSerialize};
 
 declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
@@ -99,7 +99,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 ///             mint: ctx.accounts.mint.to_account_info(),
 ///             fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
 ///             rent: ctx.accounts.rent.to_account_info(),
-///             timelock_program: ctx.accounts.timelock_program.to_account_info(),
+///             streamflow_program: ctx.accounts.streamflow_program.to_account_info(),
 ///             token_program: ctx.accounts.token_program.to_account_info(),
 ///             associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
 ///             system_program: ctx.accounts.system_program.to_account_info(),
@@ -108,7 +108,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 ///         // initializing anchor CpiContext, can be used in native solana programs as well
 ///         // additional reference:
 ///         // https:///project-serum.github.io/anchor/tutorials/tutorial-3.html
-///         let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+///         let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
 ///
 ///         // calling cpi method which calls solana_program invoke with
 ///         // serialized instruction data fit for streamflow program
@@ -158,6 +158,28 @@ pub mod streamflow_sdk {
     ) -> ProgramResult {
         Ok(())
     }
+
+    /// Anchor rpc handler used for CPI code generation
+    #[allow(unused_variables)]
+    pub fn create_unchecked(
+        ctx: Context<CreateUnchecked>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey
+    ) -> ProgramResult { Ok(()) }
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
@@ -233,13 +255,49 @@ pub struct Create<'info> {
     /// The Rent Sysvar account.
     pub rent: Sysvar<'info, Rent>,
     /// Streamflow protocol (alias timelock) program account.
-    pub timelock_program: AccountInfo<'info>,
+    pub streamflow_program: AccountInfo<'info>,
     /// The SPL program needed in case an associated account
     /// for the new recipient is being created.
     pub token_program: Program<'info, Token>,
     /// The Associated Token program needed in case associated
     /// account for the new recipient is being created.
     pub associated_token_program: Program<'info, AssociatedToken>,
+    /// The Solana system program needed for account creation.
+    pub system_program: Program<'info, System>,
+}
+
+/// Accounts expected in create_unchecked instruction
+#[derive(Accounts)]
+pub struct CreateUnchecked<'info> {
+    /// Wallet of the contract creator.
+    #[account(mut)]
+    pub sender: Signer<'info>,
+    /// Associated token account address of `sender`.
+    #[account(mut)]
+    pub sender_tokens: AccountInfo<'info>,
+    /// The account holding the contract parameters.
+    /// Expects account initialized with 1104 bytes.
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    /// The escrow account holding the funds.
+    /// Expects empty (non-initialized) account.
+    #[account(mut)]
+    pub escrow_tokens: AccountInfo<'info>,
+    /// Delegate account for automatically withdrawing contracts.
+    #[account(mut)]
+    pub withdrawor: AccountInfo<'info>,
+    /// The SPL token mint account.
+    pub mint: Account<'info, Mint>,
+    /// Internal program that handles fees for specified partners. If no partner fees are expected
+    /// on behalf of the program integrating with streamflow, `streamflow_treasury` can be passed
+    /// in here.
+    pub fee_oracle: AccountInfo<'info>,
+    /// The Rent Sysvar account.
+    pub rent: Sysvar<'info, Rent>,
+    /// Streamflow protocol (alias timelock) program account.
+    pub streamflow_program: AccountInfo<'info>,
+    /// The SPL program account.
+    pub token_program: Program<'info, Token>,
     /// The Solana system program needed for account creation.
     pub system_program: Program<'info, System>,
 }
@@ -443,4 +501,43 @@ pub struct CreateParams {
     pub stream_name: [u8; 64],
     /// Withdraw frequency
     pub withdraw_frequency: u64,
+}
+
+
+/// Instruction data expected in the create_unchecked instruction
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+#[repr(C)]
+pub struct CreateParamsUnchecked {
+    /// Timestamp when the tokens start vesting
+    pub start_time: u64,
+    /// Deposited amount of tokens
+    pub net_amount_deposited: u64,
+    /// Time step (period) in seconds per which the vesting/release occurs
+    pub period: u64,
+    /// Amount released per period. Combined with `period`, we get a release rate.
+    pub amount_per_period: u64,
+    /// Vesting contract "cliff" timestamp
+    pub cliff: u64,
+    /// Amount unlocked at the "cliff" timestamp
+    pub cliff_amount: u64,
+    /// Whether or not a stream can be canceled by a sender
+    pub cancelable_by_sender: bool,
+    /// Whether or not a stream can be canceled by a recipient
+    pub cancelable_by_recipient: bool,
+    /// Whether or not a 3rd party can initiate withdraw in the name of recipient
+    pub automatic_withdrawal: bool,
+    /// Whether or not the sender can transfer the stream
+    pub transferable_by_sender: bool,
+    /// Whether or not the recipient can transfer the stream
+    pub transferable_by_recipient: bool,
+    /// Whether topup is enabled
+    pub can_topup: bool,
+    /// The name of this stream
+    pub stream_name: [u8; 64],
+    /// Withdraw frequency
+    pub withdraw_frequency: u64,
+    /// Pubkey of the contract recipient
+    pub recipient: Pubkey,
+    /// Pubkey of the fee partner
+    pub partner: Pubkey,
 }
