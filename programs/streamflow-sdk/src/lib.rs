@@ -7,7 +7,7 @@ use anchor_spl::{
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 
-declare_id!("6h7XgGRiHae5C6p3cWo44Ga7jwxRN4KS8TtLabVVVGYS");
+declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 
 /// Streamflow sdk module defining anchor account structs expected from the streamflow protocol
 /// as well as anchor cpi module used for invoking streamflow protocol

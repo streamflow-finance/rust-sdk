@@ -6,7 +6,7 @@ SDK for Rust on-chain solana programs to interact with streamflow protocol
 Declare a dependency in your program's Cargo.toml
 
 ```rust
-streamflow_sdk = {version = "0.5.2", features = ["cpi"]}
+streamflow_sdk = {version = "0.5.3", features = ["cpi"]}
 ```
 
 In your program's instruction which should invoke streamflow's create instruction:
