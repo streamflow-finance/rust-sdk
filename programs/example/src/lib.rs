@@ -146,7 +146,7 @@ pub mod example_program {
         recipient: Pubkey,
         partner: Pubkey
     ) -> Result<()> {
-        let ix = CreateParamsUnchecked {
+        let ix = cpi::CreateParamsUnchecked {
             start_time,
             net_amount_deposited,
             period,

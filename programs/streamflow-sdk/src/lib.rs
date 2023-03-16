@@ -1,7 +1,4 @@
-use anchor_lang::{
-    prelude::*,
-    prelude::borsh::{BorshDeserialize, BorshSerialize}
-};
+use anchor_lang::prelude::*;
 
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -136,7 +133,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 
 
 #[program]
-pub mod cpi {
+pub mod streamflow_sdk {
     use super::*;
 
     /// Anchor rpc handler used for CPI code generation
@@ -499,7 +496,7 @@ pub struct Topup<'info> {
 }
 
 /// Instruction data expected in create instruction
-#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 #[repr(C)]
 pub struct CreateParams {
     /// Timestamp when the tokens start vesting
@@ -534,7 +531,7 @@ pub struct CreateParams {
 
 
 /// Instruction data expected in the create_unchecked instruction
-#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 #[repr(C)]
 pub struct CreateParamsUnchecked {
     /// Timestamp when the tokens start vesting
@@ -573,7 +570,7 @@ pub struct CreateParamsUnchecked {
 
 
 /// Instruction data expected in update instruction
-#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 #[repr(C)]
 pub struct UpdateParams {
     /// Optionally enable automatic withdrawal
