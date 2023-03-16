@@ -98,7 +98,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 ///             mint: ctx.accounts.mint.to_account_info(),
 ///             fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
 ///             rent: ctx.accounts.rent.to_account_info(),
-///             streamflow_program: ctx.accounts.streamflow_program.to_account_info(),
+///             timelock_program: ctx.accounts.timelock_program.to_account_info(),
 ///             token_program: ctx.accounts.token_program.to_account_info(),
 ///             associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
 ///             system_program: ctx.accounts.system_program.to_account_info(),
@@ -107,7 +107,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 ///         // initializing anchor CpiContext, can be used in native solana programs as well
 ///         // additional reference:
 ///         // https:///project-serum.github.io/anchor/tutorials/tutorial-3.html
-///         let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+///         let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
 ///
 ///         // calling cpi method which calls solana_program invoke with
 ///         // serialized instruction data fit for streamflow program
@@ -265,7 +265,7 @@ pub struct Create<'info> {
     /// The Rent Sysvar account.
     pub rent: Sysvar<'info, Rent>,
     /// Streamflow protocol (alias timelock) program account.
-    pub streamflow_program: AccountInfo<'info>,
+    pub timelock_program: AccountInfo<'info>,
     /// The SPL program needed in case an associated account
     /// for the new recipient is being created.
     pub token_program: Program<'info, Token>,
@@ -305,7 +305,7 @@ pub struct CreateUnchecked<'info> {
     /// The Rent Sysvar account.
     pub rent: Sysvar<'info, Rent>,
     /// Streamflow protocol (alias timelock) program account.
-    pub streamflow_program: AccountInfo<'info>,
+    pub timelock_program: AccountInfo<'info>,
     /// The SPL program account.
     pub token_program: Program<'info, Token>,
     /// The Solana system program needed for account creation.
