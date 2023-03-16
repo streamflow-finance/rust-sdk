@@ -136,7 +136,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 
 
 #[program]
-pub mod streamflow_sdk {
+pub mod cpi {
     use super::*;
 
     /// Anchor rpc handler used for CPI code generation

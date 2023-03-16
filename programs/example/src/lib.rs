@@ -4,15 +4,7 @@ use anchor_spl::{
     token::{Mint, Token, TokenAccount},
 };
 
-use streamflow_sdk::cpi::accounts::{
-    Create as CpiCreate,
-    CreateUnchecked as CpiCreateUnchecked,
-    Update as CpiUpdate,
-    Withdraw as CpiWithdraw,
-    Topup as CpiTopup,
-    Transfer as CpiTransfer,
-    Cancel as CpiCancel,
-};
+use streamflow_sdk::cpi;
 
 declare_id!("FGjLaVo5zLGdzCxMo9gu9tXr1kzTToKd8C8K7YS5hNM1");
 
@@ -60,7 +52,7 @@ pub mod example_program {
         };
 
         // initializing accounts struct for cross-program invoke
-        let accs = CpiCreate {
+        let accs = cpi::Create {
             sender: ctx.accounts.sender.to_account_info(),
             sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
             recipient: ctx.accounts.recipient.to_account_info(),
