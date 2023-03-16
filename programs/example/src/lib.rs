@@ -1,5 +1,4 @@
-use anchor_lang::prelude::*;
-use anchor_lang::Result;
+use anchor_lang::{prelude::*, solana_program::entrypoint::ProgramResult};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
@@ -8,6 +7,7 @@ use anchor_spl::{
 use streamflow_sdk::cpi::accounts::{
     Create as CpiCreate,
     CreateUnchecked as CpiCreateUnchecked,
+    Update as CpiUpdate,
     Withdraw as CpiWithdraw,
     Topup as CpiTopup,
     Transfer as CpiTransfer,
@@ -21,7 +21,8 @@ pub mod example_program {
     use super::*;
 
     //importing parameter struct for stream/vesting contract creation
-    use streamflow_sdk::{CreateParams, CreateParamsUnchecked};
+    use streamflow_sdk::{CreateParams, CreateParamsUnchecke};
+    use streamflow_sdk::UpdateParams;
 
     //anchor rpc handlers
     pub fn create(
@@ -102,6 +103,34 @@ pub mod example_program {
             ix.can_topup,
             ix.stream_name,
             ix.withdraw_frequency,
+        )
+    }
+
+    pub fn update(
+        ctx: Context<Update>,
+        enable_automatic_withdrawal: Option<bool>,
+        withdraw_frequency: Option<u64>,
+        amount_per_period: Option<u64>
+    ) -> ProgramResult {
+        let ix = UpdateParams {
+            enable_automatic_withdrawal,
+            withdraw_frequency,
+            amount_per_period
+        };
+
+        let accs = CpiUpdate {
+            authority: ctx.accounts.authority.to_account_info(),
+            metadata: ctx.accounts.metadata.to_account_info(),
+            withdrawor: ctx.accounts.withdrawor.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        };
+
+        let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
+        streamflow_sdk::cpi::update(
+            cpi_ctx,
+            ix.enable_automatic_withdrawal,
+            ix.withdraw_frequency,
+            ix.amount_per_period,
         )
     }
 
@@ -309,6 +338,17 @@ pub struct CreateUnchecked<'info> {
     pub rent: Sysvar<'info, Rent>,
     pub streamflow_program: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Update<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    #[account(mut)]
+    pub withdrawor: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
 }
 

@@ -15,7 +15,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.24.2"
-anchor-spl = "0.24.2"
+anchor-lang = "0.26.0"
+anchor-spl = "0.26.0"
 streamflow-sdk = { path = "../streamflow-sdk", features = ["cpi"]}
 

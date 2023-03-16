@@ -59,6 +59,7 @@ Rust program that provides SPL timelock functionalities
 
 Functionalities are:
 - `create` a vesting contract.
+- `update` a vesting contract
 - `withdraw` from a vesting contract.
 - `cancel` a vesting contract.
 - `transfer_recipient` of a vesting contract.

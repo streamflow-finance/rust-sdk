@@ -1,10 +1,10 @@
-use anchor_lang::prelude::*;
-use anchor_lang::solana_program::entrypoint::ProgramResult;
+use anchor_lang::{prelude::*, solana_program::entrypoint::ProgramResult};
 
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
 };
+
 use borsh::{BorshDeserialize, BorshSerialize};
 
 declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
@@ -17,7 +17,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 /// Declaring a dependency in program's Cargo.toml
 ///
 /// ```ignore
-/// streamflow_sdk = {version = "0.5.1", features = ["cpi"]}
+/// streamflow_sdk = {version = "0.6.0", features = ["cpi"]}
 /// ```
 ///
 /// Example anchor program invoking streamflow create instruction
@@ -32,6 +32,7 @@ declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 ///
 /// use streamflow_sdk::cpi::accounts::{
 ///     Create as CpiCreate,
+///     Update as CpiUpdate,
 ///     Withdraw as CpiWithdraw,
 ///     Topup as CpiTopup,
 ///     Transfer as CpiTransfer,
@@ -183,6 +184,17 @@ pub mod streamflow_sdk {
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
+    pub fn update(
+        ctx: Context<Update>,
+        enable_automatic_withdrawal: Option<bool>,
+        withdraw_frequency: Option<u64>,
+        amount_per_period: Option<u64>
+    ) -> ProgramResult {
+        Ok(())
+    }
+
+    /// Anchor rpc handler used for CPI code generation
+    #[allow(unused_variables)]
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> ProgramResult {
         Ok(())
     }
@@ -299,6 +311,22 @@ pub struct CreateUnchecked<'info> {
     /// The SPL program account.
     pub token_program: Program<'info, Token>,
     /// The Solana system program needed for account creation.
+    pub system_program: Program<'info, System>,
+}
+
+/// Accounts expected in update instruction
+#[derive(Accounts)]
+pub struct Update<'info> {
+    /// Wallet that initiates contract update.
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    /// The account holding the contract parameters.
+    /// Expects initialized account.
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    /// Delegate account for automatically withdrawing contracts.
+    #[account(mut)]
+    pub withdrawor: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -540,4 +568,17 @@ pub struct CreateParamsUnchecked {
     pub recipient: Pubkey,
     /// Pubkey of the fee partner
     pub partner: Pubkey,
+}
+
+
+/// Instruction data expected in update instruction
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+#[repr(C)]
+pub struct UpdateParams {
+    /// Optionally enable automatic withdrawal
+    pub enable_automatic_withdrawal: Option<bool>,
+    /// If automatic withdrawal is to be enabled, optionally change withdraw frequency
+    pub withdraw_frequency: Option<u64>,
+    /// Optionally update amount unlocked per period
+    pub amount_per_period: Option<u64>,
 }
