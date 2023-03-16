@@ -1,11 +1,12 @@
-use anchor_lang::{prelude::*, solana_program::entrypoint::ProgramResult};
+use anchor_lang::{
+    prelude::*,
+    prelude::borsh::{BorshDeserialize, BorshSerialize}
+};
 
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
 };
-
-use borsh::{BorshDeserialize, BorshSerialize};
 
 declare_id!("96XymQipCZuhyqWinnw4kDJGFuxeYKTSp7PTd9cGAzge");
 
@@ -156,7 +157,7 @@ pub mod streamflow_sdk {
         can_topup: bool,
         stream_name: [u8; 64],
         withdraw_frequency: u64,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         Ok(())
     }
 
@@ -180,7 +181,7 @@ pub mod streamflow_sdk {
         withdraw_frequency: u64,
         recipient: Pubkey,
         partner: Pubkey
-    ) -> ProgramResult { Ok(()) }
+    ) -> Result<()> { Ok(()) }
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
@@ -189,31 +190,31 @@ pub mod streamflow_sdk {
         enable_automatic_withdrawal: Option<bool>,
         withdraw_frequency: Option<u64>,
         amount_per_period: Option<u64>
-    ) -> ProgramResult {
+    ) -> Result<()> {
         Ok(())
     }
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
-    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> ProgramResult {
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         Ok(())
     }
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
-    pub fn cancel(ctx: Context<Cancel>) -> ProgramResult {
+    pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
         Ok(())
     }
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
-    pub fn transfer_recipient(ctx: Context<Transfer>) -> ProgramResult {
+    pub fn transfer_recipient(ctx: Context<Transfer>) -> Result<()> {
         Ok(())
     }
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
-    pub fn topup(ctx: Context<Topup>, amount: u64) -> ProgramResult {
+    pub fn topup(ctx: Context<Topup>, amount: u64) -> Result<()> {
         Ok(())
     }
 }
