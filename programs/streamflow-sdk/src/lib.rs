@@ -317,7 +317,7 @@ pub struct CreateUnchecked<'info> {
 pub struct Update<'info> {
     /// Wallet that initiates contract update.
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub sender: Signer<'info>,
     /// The account holding the contract parameters.
     /// Expects initialized account.
     #[account(mut)]
