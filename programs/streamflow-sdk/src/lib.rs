@@ -154,6 +154,8 @@ pub mod streamflow_sdk {
         can_topup: bool,
         stream_name: [u8; 64],
         withdraw_frequency: u64,
+        pausable: Option<bool>,
+        can_update_rate: Option<bool>,
     ) -> Result<()> {
         Ok(())
     }
@@ -177,7 +179,9 @@ pub mod streamflow_sdk {
         stream_name: [u8; 64],
         withdraw_frequency: u64,
         recipient: Pubkey,
-        partner: Pubkey
+        partner: Pubkey,
+        pausable: bool,
+        can_update_rate: bool,
     ) -> Result<()> { Ok(()) }
 
     /// Anchor rpc handler used for CPI code generation
