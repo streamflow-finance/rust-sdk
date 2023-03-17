@@ -205,6 +205,18 @@ pub mod streamflow_sdk {
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
+    pub fn pause(ctx: Context<Pause>) -> Result<()> {
+        Ok(())
+    }
+
+    /// Anchor rpc handler used for CPI code generation
+    #[allow(unused_variables)]
+    pub fn unpause(ctx: Context<UnPause>) -> Result<()> {
+        Ok(())
+    }
+
+    /// Anchor rpc handler used for CPI code generation
+    #[allow(unused_variables)]
     pub fn transfer_recipient(ctx: Context<Transfer>) -> Result<()> {
         Ok(())
     }
@@ -326,6 +338,24 @@ pub struct Update<'info> {
     #[account(mut)]
     pub withdrawor: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
+}
+
+/// Accounts expected in pause instruction
+#[derive(Accounts)]
+pub struct Pause<'info> {
+    #[account()]
+    pub sender: Signer<'info>,
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+}
+
+/// Accounts expected in unpause instruction
+#[derive(Accounts)]
+pub struct UnPause<'info> {
+    #[account()]
+    pub sender: Signer<'info>,
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
 }
 
 /// Accounts expected in withdraw instruction
