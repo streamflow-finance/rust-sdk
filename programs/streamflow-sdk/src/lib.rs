@@ -186,6 +186,30 @@ pub mod streamflow_sdk {
 
     /// Anchor rpc handler used for CPI code generation
     #[allow(unused_variables)]
+    pub fn create_unchecked_with_payer(
+        ctx: Context<CreateUncheckedWithPayer>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey,
+        pausable: bool,
+        can_update_rate: bool,
+    ) -> Result<()> { Ok(()) }
+
+    /// Anchor rpc handler used for CPI code generation
+    #[allow(unused_variables)]
     pub fn update(
         ctx: Context<Update>,
         enable_automatic_withdrawal: Option<bool>,
@@ -295,6 +319,45 @@ pub struct Create<'info> {
 /// Accounts expected in create_unchecked instruction
 #[derive(Accounts)]
 pub struct CreateUnchecked<'info> {
+    /// Wallet of the contract creator.
+    #[account(mut)]
+    pub sender: Signer<'info>,
+    /// Associated token account address of `sender`.
+    #[account(mut)]
+    pub sender_tokens: AccountInfo<'info>,
+    /// The account holding the contract parameters.
+    /// Expects account initialized with 1104 bytes.
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    /// The escrow account holding the funds.
+    /// Expects empty (non-initialized) account.
+    #[account(mut)]
+    pub escrow_tokens: AccountInfo<'info>,
+    /// Delegate account for automatically withdrawing contracts.
+    #[account(mut)]
+    pub withdrawor: AccountInfo<'info>,
+    /// The SPL token mint account.
+    pub mint: Account<'info, Mint>,
+    /// Internal program that handles fees for specified partners. If no partner fees are expected
+    /// on behalf of the program integrating with streamflow, `streamflow_treasury` can be passed
+    /// in here.
+    pub fee_oracle: AccountInfo<'info>,
+    /// The Rent Sysvar account.
+    pub rent: Sysvar<'info, Rent>,
+    /// Streamflow protocol (alias timelock) program account.
+    pub timelock_program: AccountInfo<'info>,
+    /// The SPL program account.
+    pub token_program: Program<'info, Token>,
+    /// The Solana system program needed for account creation.
+    pub system_program: Program<'info, System>,
+}
+
+/// Accounts expected in create_unchecked instruction
+#[derive(Accounts)]
+pub struct CreateUncheckedWithPayer<'info> {
+    /// Wallet of the payer account to pay for accounts creation
+    #[account(mut)]
+    pub payer: Signer<'info>,
     /// Wallet of the contract creator.
     #[account(mut)]
     pub sender: Signer<'info>,
