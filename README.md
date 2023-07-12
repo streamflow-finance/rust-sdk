@@ -5,35 +5,70 @@ SDK for Rust on-chain solana programs to interact with streamflow protocol
 
 Declare a dependency in your program's Cargo.toml
 
-```rust
-streamflow_sdk = {version = "0.5.3", features = ["cpi"]}
+```toml
+streamflow_sdk = {version = "0.6", features = ["cpi"]}
 ```
 
-In your program's instruction which should invoke streamflow's create instruction:
+To use protocol on mainnet add sdk with `mainnet` feature
 
+```toml
+streamflow_sdk = {version = "0.6", features = ["cpi", "mainnet"]}
+```
+
+Example anchor program invoking streamflow create instruction:
 
 ```rust
-use anchor_lang::prelude::*;
-use streamflow_sdk::cpi::accounts::Create
-use streamflow_sdk::cpi;
+use anchor_lang::{prelude::*};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{Mint, Token, TokenAccount},
+};
+
+use streamflow_sdk;
+use streamflow_sdk::cpi::accounts::Create;
 
 let accs = Create {
     sender: ctx.accounts.sender.to_account_info(),
     sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
-    ...
-}
-
-let cpi_ctx = CpiContext::new(
-    ctx.accounts.streamflow_program.to_account_info(), accs
-);
-
-streamflow_sdk::cpi::create(
-            cpi_ctx,
-            start_time,
-            net_amount_deposited
-            ...
+    recipient: ctx.accounts.recipient.to_account_info(),
+    recipient_tokens: ctx.accounts.recipient_tokens.to_account_info(),
+    metadata: ctx.accounts.metadata.to_account_info(),
+    escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
+    streamflow_treasury: ctx.accounts.streamflow_treasury.to_account_info(),
+    streamflow_treasury_tokens: ctx.accounts.streamflow_treasury_tokens.to_account_info(),
+    withdrawor: ctx.accounts.withdrawor.to_account_info(),
+    partner: ctx.accounts.partner.to_account_info(),
+    partner_tokens: ctx.accounts.partner_tokens.to_account_info(),
+    mint: ctx.accounts.mint.to_account_info(),
+    fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
+    rent: ctx.accounts.rent.to_account_info(),
+    timelock_program: ctx.accounts.streamflow_program.to_account_info(),
+    token_program: ctx.accounts.token_program.to_account_info(),
+    associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
+    system_program: ctx.accounts.system_program.to_account_info(),
 };
 
+let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+
+streamflow_sdk::cpi::create(
+    cpi_ctx,
+    start_time,
+    net_amount_deposited,
+    period,
+    amount_per_period,
+    cliff,
+    cliff_amount,
+    cancelable_by_sender,
+    cancelable_by_recipient,
+    automatic_withdrawal,
+    transferable_by_sender,
+    transferable_by_recipient,
+    can_topup,
+    stream_name,
+    withdraw_frequency,
+    pausable,
+    can_update_rate
+)
 ```
 
 ## Example program using sdk

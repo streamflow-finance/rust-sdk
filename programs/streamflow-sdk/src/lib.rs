@@ -18,7 +18,13 @@ declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
 /// Declaring a dependency in program's Cargo.toml
 ///
 /// ```ignore
-/// streamflow_sdk = {version = "0.6.0", features = ["cpi"]}
+/// streamflow_sdk = {version = "0.6", features = ["cpi"]}
+/// ```
+///
+/// To use protocol on mainnet add sdk with `mainnet` feature
+///
+/// ```ignore
+/// streamflow_sdk = {version = "0.6", features = ["cpi", "mainnet"]}
 /// ```
 ///
 /// Example anchor program invoking streamflow create instruction
@@ -31,8 +37,10 @@ declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
 ///     token::{Mint, Token, TokenAccount},
 /// };
 ///
+/// use streamflow_sdk;
 /// use streamflow_sdk::cpi::accounts::{
 ///     Create as CpiCreate,
+///     CreateUnchecked as CpiCreateUnchecked,
 ///     Update as CpiUpdate,
 ///     Withdraw as CpiWithdraw,
 ///     Topup as CpiTopup,
@@ -45,9 +53,6 @@ declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
 /// #[program]
 /// pub mod example_program {
 ///     use super::*;
-///
-///     //importing parameter struct for stream/vesting contract creation
-///     use streamflow_sdk::CreateParams;
 ///
 ///     //anchor rpc handlers
 ///     pub fn create(
@@ -66,8 +71,40 @@ declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
 ///         can_topup: bool,
 ///         stream_name: [u8; 64],
 ///         withdraw_frequency: u64,
-///     ) -> ProgramResult {
-///         let ix = CreateParams {
+///         pausable: Option<bool>,
+///         can_update_rate: Option<bool>,
+///     ) -> Result<()> {
+///         msg!("Got create");
+///         // initializing accounts struct for cross-program invoke
+///         let accs = CpiCreate {
+///             sender: ctx.accounts.sender.to_account_info(),
+///             sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
+///             recipient: ctx.accounts.recipient.to_account_info(),
+///             recipient_tokens: ctx.accounts.recipient_tokens.to_account_info(),
+///             metadata: ctx.accounts.metadata.to_account_info(),
+///             escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
+///             streamflow_treasury: ctx.accounts.streamflow_treasury.to_account_info(),
+///             streamflow_treasury_tokens: ctx.accounts.streamflow_treasury_tokens.to_account_info(),
+///             withdrawor: ctx.accounts.withdrawor.to_account_info(),
+///             partner: ctx.accounts.partner.to_account_info(),
+///             partner_tokens: ctx.accounts.partner_tokens.to_account_info(),
+///             mint: ctx.accounts.mint.to_account_info(),
+///             fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
+///             rent: ctx.accounts.rent.to_account_info(),
+///             timelock_program: ctx.accounts.streamflow_program.to_account_info(),
+///             token_program: ctx.accounts.token_program.to_account_info(),
+///             associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
+///             system_program: ctx.accounts.system_program.to_account_info(),
+///         };
+///
+///         // initializing anchor CpiContext, can be used in native solana programs as well
+///         // additional reference: https://project-serum.github.io/anchor/tutorials/tutorial-3.html
+///         let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+///
+///         // calling cpi method which calls solana_program invoke with serialized instruction data
+///         // fit for streamflow program
+///         streamflow_sdk::cpi::create(
+///             cpi_ctx,
 ///             start_time,
 ///             net_amount_deposited,
 ///             period,
@@ -82,56 +119,11 @@ declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
 ///             can_topup,
 ///             stream_name,
 ///             withdraw_frequency,
-///         };
-///
-///         // initializing accounts struct for cross-program invoke
-///         let accs = CpiCreate {
-///             sender: ctx.accounts.sender.to_account_info(),
-///             sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
-///             recipient: ctx.accounts.recipient.to_account_info(),
-///             recipient_tokens: ctx.accounts.recipient_tokens.to_account_info(),
-///             metadata: ctx.accounts.metadata.to_account_info(),
-///             escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
-///             streamflow_treasury: ctx.accounts.streamflow_treasury.to_account_info(),
-///             streamflow_treasury_tokens:
-///             ctx.accounts.streamflow_treasury_tokens.to_account_info(),
-///             withdrawor: ctx.accounts.withdrawor.to_account_info(),
-///             partner: ctx.accounts.partner.to_account_info(),
-///             partner_tokens: ctx.accounts.partner_tokens.to_account_info(),
-///             mint: ctx.accounts.mint.to_account_info(),
-///             fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
-///             rent: ctx.accounts.rent.to_account_info(),
-///             timelock_program: ctx.accounts.timelock_program.to_account_info(),
-///             token_program: ctx.accounts.token_program.to_account_info(),
-///             associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
-///             system_program: ctx.accounts.system_program.to_account_info(),
-///         };
-///
-///         // initializing anchor CpiContext, can be used in native solana programs as well
-///         // additional reference:
-///         // https:///project-serum.github.io/anchor/tutorials/tutorial-3.html
-///         let cpi_ctx = CpiContext::new(ctx.accounts.timelock_program.to_account_info(), accs);
-///
-///         // calling cpi method which calls solana_program invoke with
-///         // serialized instruction data fit for streamflow program
-///         streamflow_sdk::cpi::create(
-///             cpi_ctx,
-///             ix.start_time,
-///             ix.net_amount_deposited,
-///             ix.period,
-///             ix.amount_per_period,
-///             ix.cliff,
-///             ix.cliff_amount,
-///             ix.cancelable_by_sender,
-///             ix.cancelable_by_recipient,
-///             ix.automatic_withdrawal,
-///             ix.transferable_by_sender,
-///             ix.transferable_by_recipient,
-///             ix.can_topup,
-///             ix.stream_name,
-///             ix.withdraw_frequency,
+///             pausable,
+///             can_update_rate
 ///         )
 ///     }
+/// }
 /// ```
 
 
