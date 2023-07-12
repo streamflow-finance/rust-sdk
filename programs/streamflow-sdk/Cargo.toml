@@ -1,6 +1,6 @@
 [package]
 name = "streamflow-sdk"
-version = "0.6.0"
+version = "0.6.1"
 license = "MIT"
 description = "Rust SDK to interact with Streamflow protocol"
 repository = "https://github.com/streamflow-finance/rust-sdk"
@@ -12,6 +12,5 @@ mainnet = []
 cpi = ["no-entrypoint"]
 
 [dependencies]
-anchor-lang = "0.28.0"
-anchor-spl = "0.28.0"
-borsh = "0.10.2"
+anchor-lang = ">=0.24.2,<1"
+anchor-spl = ">=0.24.2,<1"
