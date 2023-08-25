@@ -12,8 +12,8 @@ declare_id!("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
 #[cfg(not(feature = "mainnet"))]
 declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
 
-/// Streamflow sdk module defining anchor account structs expected from the streamflow protocol
-/// as well as anchor cpi module used for invoking streamflow protocol
+/// Streamflow sdk module defining anchor account structs expected from the Streamflow protocol
+/// as well as anchor cpi module used for invoking Streamflow protocol
 ///
 /// ## Usage
 ///
@@ -213,11 +213,11 @@ pub mod streamflow_sdk {
     /// * `automatic_withdrawal` - Whether automatic withdrawals are enabled
     /// * `transferable_by_sender` - Whether Stream can be transferred by Sender
     /// * `transferable_by_recipient` - Whether Stream can be transferred by Recipient
-    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens)
+    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens) by Sender
     /// * `stream_name` - Name of the Stream
-    /// * `withdraw_frequency` - Frequency of Automatic Withdrawals, if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
+    /// * `withdraw_frequency` - if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
     /// * `pausable` - Whether Stream can be paused by Sender
-    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the stream via `update` method
+    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the Stream via `update` method
     #[allow(unused_variables)]
     pub fn create(
         ctx: Context<Create>,
@@ -243,8 +243,8 @@ pub mod streamflow_sdk {
 
     /// Create a Stream and skip some optional checks
     ///
-    /// This method allows to create a stream and omit some of address checks on creation.
-    /// It is not recommended to use this method unless you need create a stream inside a contract and you don't have space for extra accounts.
+    /// This method creates a stream and omit some of address checks on creation.
+    /// It is not recommended to use this method unless you need create a Stream inside a contract and you don't have space for extra accounts.
     ///
     /// # Arguments
     ///
@@ -260,11 +260,11 @@ pub mod streamflow_sdk {
     /// * `automatic_withdrawal` - Whether automatic withdrawals are enabled
     /// * `transferable_by_sender` - Whether Stream can be transferred by Sender
     /// * `transferable_by_recipient` - Whether Stream can be transferred by Recipient
-    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens)
+    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens) by Sender
     /// * `stream_name` - Name of the Stream
-    /// * `withdraw_frequency` - Frequency of Automatic Withdrawals, if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
+    /// * `withdraw_frequency` - if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
     /// * `pausable` - Whether Stream can be paused by Sender
-    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the stream via `update` method
+    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the Stream via `update` method
 
     #[allow(unused_variables)]
     pub fn create_unchecked(
@@ -291,9 +291,9 @@ pub mod streamflow_sdk {
 
     /// Create a Stream and skip some optional checks
     ///
-    /// This method allows to create a stream and omit some of address checks on creation.
+    /// This method creates a stream and omit some of address checks on creation.
     /// Also on creation `payer` account will be used to initiliaze accounts and pay withdrawal fees.
-    /// It is not recommended to use this method unless you need create a stream inside a contract and you don't have space for extra accounts
+    /// It is not recommended to use this method unless you need create a Stream inside a contract and you don't have space for extra accounts
     /// and `sender` can't pay for fees (for example, if `sender` is your contract).
     ///
     /// # Arguments
@@ -310,11 +310,11 @@ pub mod streamflow_sdk {
     /// * `automatic_withdrawal` - Whether automatic withdrawals are enabled
     /// * `transferable_by_sender` - Whether Stream can be transferred by Sender
     /// * `transferable_by_recipient` - Whether Stream can be transferred by Recipient
-    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens)
+    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens) by Sender
     /// * `stream_name` - Name of the Stream
-    /// * `withdraw_frequency` - Frequency of Automatic Withdrawals, if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
+    /// * `withdraw_frequency` - if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
     /// * `pausable` - Whether Stream can be paused by Sender
-    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the stream via `update` method
+    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the Stream via `update` method
     #[allow(unused_variables)]
     pub fn create_unchecked_with_payer(
         ctx: Context<CreateUncheckedWithPayer>,
@@ -340,7 +340,7 @@ pub mod streamflow_sdk {
 
     /// Update a Stream
     ///
-    /// This method allows to enable automatic withdrawals and/or update `amount_per_period` in a Stream
+    /// This method enables automatic withdrawals and/or updates `amount_per_period` in a Stream
     ///
     /// # Arguments
     /// * `ctx` - Accounts that will be used on Stream update
@@ -357,9 +357,9 @@ pub mod streamflow_sdk {
         Ok(())
     }
 
-    /// Withdraw a Stream
+    /// Withdraw tokens from a Stream
     ///
-    /// This methods allows to withdraw a stream, requested amount of tokens will be sent to the Recipient
+    /// This methods withdraws tokens from a Stream, requested amount of tokens will be sent to the Recipient
     /// If `enable_automatic_withdrawal` is set to false only Recipient can request a Withdrawal
     ///
     /// # Arguments
@@ -417,7 +417,7 @@ pub mod streamflow_sdk {
 
     /// Topup a Stream
     ///
-    /// This method allows to Topup a Stream **if it's not closed**
+    /// This method tops up a Stream **if it's not closed**
     ///
     /// # Arguments
     /// * `ctx` - Accounts that will be used on Stream unpause
