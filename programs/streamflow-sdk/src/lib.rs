@@ -650,6 +650,7 @@ pub struct Withdraw<'info> {
     #[account(mut)]
     pub partner_tokens: AccountInfo<'info>,
     /// The SPL token mint account.
+    #[account(mut)]
     pub mint: Account<'info, Mint>,
     /// The SPL program needed in case an associated account
     /// for the new recipient is being created.
@@ -701,6 +702,7 @@ pub struct Cancel<'info> {
     #[account(mut)]
     pub partner_tokens: AccountInfo<'info>,
     /// The SPL token mint account.
+    #[account(mut)]
     pub mint: Account<'info, Mint>,
     /// The SPL program needed in case an associated account
     /// for the new recipient is being created.

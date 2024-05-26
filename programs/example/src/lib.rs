@@ -395,6 +395,7 @@ pub struct Withdraw<'info> {
         associated_token::authority = partner,
     )]
     pub partner_tokens: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
     pub mint:Box<Account<'info, Mint>>,
     /// CHECK: Streamflow protocol (alias timelock) program account.
     pub streamflow_program: UncheckedAccount<'info>,
@@ -444,6 +445,7 @@ pub struct Cancel<'info> {
         associated_token::authority = partner,
     )]
     pub partner_tokens: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
     pub mint: Box<Account<'info, Mint>>,
     /// CHECK: Streamflow protocol (alias timelock) program account.
     pub streamflow_program: UncheckedAccount<'info>,
