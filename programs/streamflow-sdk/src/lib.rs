@@ -20,13 +20,13 @@ declare_id!("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
 /// Declaring a dependency in program's Cargo.toml
 ///
 /// ```toml
-/// streamflow_sdk = {version = "0.6", features = ["cpi"]}
+/// streamflow_sdk = {version = "0.7", features = ["cpi"]}
 /// ```
 ///
-/// To use protocol on mainnet add sdk with `mainnet` feature
+/// To use protocol on devnet add sdk with `devnet` feature
 ///
 /// ```toml
-/// streamflow_sdk = {version = "0.6", features = ["cpi", "mainnet"]}
+/// streamflow_sdk = {version = "0.7", features = ["cpi", "devnet"]}
 /// ```
 ///
 /// Example anchor program invoking streamflow create instruction
