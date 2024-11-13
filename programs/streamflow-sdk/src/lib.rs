@@ -7,10 +7,10 @@ use anchor_spl::{
     token::{Mint, Token, TokenAccount},
 };
 
-#[cfg(feature = "mainnet")]
-declare_id!("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
-#[cfg(not(feature = "mainnet"))]
+#[cfg(feature = "devnet")]
 declare_id!("HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1kAQdCZaCMfMZ");
+#[cfg(not(feature = "devnet"))]
+declare_id!("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
 
 /// Streamflow sdk module defining anchor account structs expected from the Streamflow protocol
 /// as well as anchor cpi module used for invoking Streamflow protocol
