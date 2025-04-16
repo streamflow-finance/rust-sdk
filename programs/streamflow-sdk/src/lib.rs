@@ -441,7 +441,7 @@ pub struct Create<'info> {
     #[account(mut)]
     pub recipient: AccountInfo<'info>,
     /// The account holding the contract parameters.
-    /// Expects empty (non-initialized) account.
+    /// Expects empty (non-initialized) account that should also be a signer.
     #[account(mut, signer)]
     pub metadata: AccountInfo<'info>,
     /// The escrow account holding the funds.
@@ -503,7 +503,7 @@ pub struct CreateUnchecked<'info> {
     #[account(mut)]
     pub sender_tokens: AccountInfo<'info>,
     /// The account holding the contract parameters.
-    /// Expects account initialized with `streamflow_sdk::state::METADATA_LEN` bytes length.
+    /// Expects account initialized with `streamflow_sdk::state::METADATA_LEN` bytes length and assigned program ID.
     #[account(mut)]
     pub metadata: AccountInfo<'info>,
     /// The escrow account holding the funds.
