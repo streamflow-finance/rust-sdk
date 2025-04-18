@@ -6,13 +6,13 @@ SDK for Rust on-chain solana programs to interact with streamflow protocol
 Declare a dependency in your program's Cargo.toml
 
 ```toml
-streamflow_sdk = {version = "0.8", features = ["cpi"]}
+streamflow_sdk = {version = "0.9", features = ["cpi"]}
 ```
 
 To use protocol on devnet add sdk with `devnet` feature
 
 ```toml
-streamflow_sdk = {version = "0.8", features = ["cpi", "devnet"]}
+streamflow_sdk = {version = "0.9", features = ["cpi", "devnet"]}
 ```
 
 Example anchor program invoking streamflow create instruction:

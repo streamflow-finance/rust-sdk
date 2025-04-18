@@ -20,6 +20,19 @@ pub fn find_escrow_account(seed: &[u8], pid: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(&[ESCROW_SEED_PREFIX, seed], pid)
 }
 
+/// Calculate fee amount from a provided amount
+pub fn calculate_fee_from_amount(amount: u64, percentage: f32) -> u64 {
+    if percentage <= 0.0 {
+        return 0;
+    }
+    let precision_factor: f32 = 1000000.0;
+    // largest it can get is MAX_FEE * 10^4
+    let factor = (percentage / 100.0 * precision_factor) as u128;
+
+    // this does not fit if amount  itself cannot fit into u64
+    (amount as u128 * factor / precision_factor as u128) as u64
+}
+
 /// The struct containing parameters for initializing a stream
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 #[repr(C)]
@@ -61,9 +74,9 @@ pub struct CreateParams {
 }
 
 /// Struct that represents Stream Contract stored on chain, this account **DOES NOT** have a discriminator.
-/// 
+///
 /// May be read like so
-/// 
+///
 /// ```rust
 /// let stream_metadata: Contract = match try_from_slice_unchecked(&stream_data) {
 ///     Ok(v) => v,
@@ -136,4 +149,68 @@ pub struct Contract {
     pub last_rate_change_time: u64,
     /// Accumulated unlocked tokens before last rate change (excluding cliff_amount)
     pub funds_unlocked_at_last_rate_change: u64,
+}
+
+impl Contract {
+    pub fn start_time(&self) -> u64 {
+        if self.ix.cliff > 0 {
+            self.ix.cliff
+        } else {
+            self.ix.start_time
+        }
+    }
+
+    pub fn effective_start_time(&self) -> u64 {
+        std::cmp::max(self.last_rate_change_time, self.start_time())
+    }
+
+    pub fn pause_time(&self, now: u64) -> u64 {
+        if self.current_pause_start > 0 {
+            return self.pause_cumulative + now - self.current_pause_start;
+        }
+        self.pause_cumulative
+    }
+
+    /// amount available that is vested (excluding cliff)
+    pub fn vested_available(&self, now: u64) -> u64 {
+        let start = self.start_time();
+        // if pause started before start/cliff and is still active, no unlocks
+        if self.current_pause_start < start && self.current_pause_start != 0 {
+            return 0;
+        }
+        // available from streaming based on current rate
+        let effective_stream_duration = now - self.effective_start_time() - self.pause_time(now);
+        let effective_periods_passed = effective_stream_duration / self.ix.period;
+        let effective_amount_available = effective_periods_passed * self.ix.amount_per_period;
+
+        effective_amount_available + self.funds_unlocked_at_last_rate_change
+    }
+
+    pub fn available_to_claim(&self, now: u64, fee_percentage: f32) -> u64 {
+        if self.start_time() > now
+            || self.ix.net_amount_deposited == 0
+            || self.ix.net_amount_deposited == self.amount_withdrawn
+        {
+            return 0;
+        }
+        if now >= self.end_time && self.current_pause_start == 0 {
+            return self.ix.net_amount_deposited - self.amount_withdrawn;
+        }
+
+        let vested_available =
+            calculate_fee_from_amount(self.vested_available(now), fee_percentage);
+        let cliff_available = calculate_fee_from_amount(self.cliff_available(now), fee_percentage);
+        let sum_available = vested_available + cliff_available;
+        sum_available - self.amount_withdrawn
+    }
+
+    pub fn cliff_available(&self, now: u64) -> u64 {
+        if self.current_pause_start < self.ix.cliff && self.current_pause_start != 0 {
+            return 0;
+        }
+        if now < self.ix.cliff {
+            return 0;
+        }
+        self.ix.cliff_amount
+    }
 }
