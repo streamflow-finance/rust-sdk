@@ -347,12 +347,18 @@ pub mod streamflow_sdk {
     /// * `enable_automatic_withdrawal` - Whether to enable automatic withdrawals (can't be disabled)
     /// * `withdraw_frequency` - Set withdrawal frequency, use it only if `enable_automatic_withdrawal` is set to Some(true)
     /// * `amount_per_period` - Whether to update Unlock Amount of the Stream, `can_update_rate` should be enabled
+    /// * `transferable_by_sender` - Whether to disable transfer by Sender, only disabling is possible.
+    /// * `transferable_by_recipient` - Whether to enable transfer by Recipient, only enabling is possible.
+    /// * `cancelable_by_sender` - Whether to disable cancel by Sender, only disabling is possible.
     #[allow(unused_variables)]
     pub fn update(
         ctx: Context<Update>,
         enable_automatic_withdrawal: Option<bool>,
         withdraw_frequency: Option<u64>,
-        amount_per_period: Option<u64>
+        amount_per_period: Option<u64>,
+        transferable_by_sender: Option<bool>,
+        transferable_by_recipient: Option<bool>,
+        cancelable_by_sender: Option<bool>,
     ) -> Result<()> {
         Ok(())
     }
