@@ -95,7 +95,10 @@ pub mod example_program {
         ctx: Context<Update>,
         enable_automatic_withdrawal: Option<bool>,
         withdraw_frequency: Option<u64>,
-        amount_per_period: Option<u64>
+        amount_per_period: Option<u64>,
+        transferable_by_sender: Option<bool>,
+        transferable_by_recipient: Option<bool>,
+        cancelable_by_sender: Option<bool>,
     ) -> Result<()> {
         let accs = CpiUpdate {
             sender: ctx.accounts.sender.to_account_info(),
@@ -110,6 +113,9 @@ pub mod example_program {
             enable_automatic_withdrawal,
             withdraw_frequency,
             amount_per_period,
+            transferable_by_sender,
+            transferable_by_recipient,
+            cancelable_by_sender,
         )
     }
 
