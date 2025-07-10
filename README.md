@@ -111,7 +111,7 @@ High level overview
 
 ## Fees
 
-Streamflow protocol transfer 0.25% of contract total amount (net_amount_deposit) to streamflow treasury to cover costs of building and maintaining protocol.
+The protocol is free.
 
 ## Registering as partner on streamflow protocol
 
