@@ -421,6 +421,17 @@ pub mod streamflow_sdk {
         Ok(())
     }
 
+    /// Transfer a Stream Sender
+    ///
+    /// This method transfer Stream Sender to another Wallet.
+    ///
+    /// # Arguments
+    /// * `ctx` - Accounts that will be used on Stream sender transfer
+    #[allow(unused_variables)]
+    pub fn transfer_sender(ctx: Context<TransferSender>) -> Result<()> {
+        Ok(())
+    }
+
     /// Topup a Stream
     ///
     /// This method tops up a Stream **if it's not closed**
@@ -743,6 +754,26 @@ pub struct Transfer<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
     /// The Solana system program needed for account creation.
     pub system_program: Program<'info, System>,
+}
+
+/// Accounts expected in transfer sender instruction
+#[derive(Accounts)]
+pub struct TransferSender<'info> {
+    /// Wallet of the current contract sender.
+    pub sender: Signer<'info>,
+    /// Wallet address of the new contract sender
+    pub new_sender: Signer<'info>,
+    /// Wallet address of the new contract sender's token account
+    pub new_sender_tokens: AccountInfo<'info>,
+    /// The account holding the contract parameters.
+    /// Expects initialized account.
+    #[account(mut)]
+    pub metadata: AccountInfo<'info>,
+    /// The SPL token mint account.
+    pub mint: Account<'info, Mint>,
+    /// The SPL program needed in case an associated account
+    /// for the new sender is being created.
+    pub token_program: Program<'info, Token>,
 }
 
 /// Accounts expected in topup instruction
