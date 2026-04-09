@@ -115,4 +115,4 @@ The protocol is free.
 
 ## Registering as partner on streamflow protocol
 
-Streamflow protocol supports integrating partner fees for other protocols built on top of streamflow. For more information, reach us out on discord. https://discord.gg/NPxw3m4pzt
+Streamflow protocol supports integrating partner fees for other protocols built on top of streamflow. For more information, reach us out on discord. https://discord.com/invite/streamflow-851921970169511976
