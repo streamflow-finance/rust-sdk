@@ -624,7 +624,7 @@ pub struct Create<'info> {
     /// - create: should be an ephemeral signer;
     /// - create_v2: a PDA, use `streamflow_sdk::state::derive_metadata` to derive.
     ///   Derivation path: `["strm-met", mint, sender, nonce_be_bytes]`
-    #[account(mut, signer)]
+    #[account(mut)]
     pub metadata: AccountInfo<'info>,
     /// The escrow account holding the funds.
     /// Should be a PDA, use `streamflow_sdk::state::find_escrow_account` to derive
