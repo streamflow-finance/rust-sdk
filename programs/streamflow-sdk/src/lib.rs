@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 pub mod state;
 
 use anchor_lang::prelude::*;
@@ -43,6 +44,7 @@ declare_id!("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
 /// use streamflow_sdk::cpi::accounts::{
 ///     Create as CpiCreate,
 ///     CreateUnchecked as CpiCreateUnchecked,
+///     CreateUncheckedWithPayer as CpiCreateUncheckedWithPayer,
 ///     Update as CpiUpdate,
 ///     Withdraw as CpiWithdraw,
 ///     Topup as CpiTopup,
@@ -241,6 +243,58 @@ pub mod streamflow_sdk {
         Ok(())
     }
 
+    /// Create a Stream with PDA-based metadata (v2)
+    ///
+    /// This is similar to `create` but uses a PDA for the metadata account instead of an
+    /// ephemeral signer keypair. The metadata PDA is derived from:
+    /// `["strm-met", mint, sender, nonce_be_bytes]`
+    ///
+    /// Use `streamflow_sdk::state::derive_metadata` to compute the metadata PDA address.
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx` - Accounts that will be used on Stream creation
+    /// * `start_time` - Unix Timestamp for Stream start, can be 0 to use current time
+    /// * `net_amount_deposited` - Amount of Tokens to deposit to the Stream
+    /// * `period` - Unlock Period in Seconds, tokens will be unlocked every `period` seconds
+    /// * `amount_per_period` - Unlock Amount, every `period` we unlock `amount_per_period` tokens
+    /// * `cliff` - Unix Timestamp of Cliff (first unlock), can be 0 to use current time or not use at all
+    /// * `cliff_amount` - Cliff Amount of tokens, can 0 to not use Cliff at all
+    /// * `cancelable_by_sender` - Whether Stream can by cancelled by Sender
+    /// * `cancelable_by_recipient` - Whether Stream can be cancelled by Recipient
+    /// * `automatic_withdrawal` - Whether automatic withdrawals are enabled
+    /// * `transferable_by_sender` - Whether Stream can be transferred by Sender
+    /// * `transferable_by_recipient` - Whether Stream can be transferred by Recipient
+    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens) by Sender
+    /// * `stream_name` - Name of the Stream
+    /// * `withdraw_frequency` - if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
+    /// * `pausable` - Whether Stream can be paused by Sender
+    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the Stream via `update` method
+    /// * `nonce` - Nonce used for PDA derivation of the metadata account
+    #[allow(unused_variables)]
+    pub fn create_v2(
+        ctx: Context<Create>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        pausable: bool,
+        can_update_rate: bool,
+        nonce: u32,
+    ) -> Result<()> {
+        Ok(())
+    }
+
     /// Create a Stream and skip some optional checks
     ///
     /// This method creates a stream and omit some of address checks on creation.
@@ -287,6 +341,60 @@ pub mod streamflow_sdk {
         partner: Pubkey,
         pausable: bool,
         can_update_rate: bool,
+    ) -> Result<()> { Ok(()) }
+
+    /// Create a Stream with PDA-based metadata and skip some optional checks (v2)
+    ///
+    /// This is similar to `create_unchecked` but uses a PDA for the metadata account
+    /// instead of requiring a pre-initialized account. The metadata PDA is derived from:
+    /// `["strm-met", mint, sender, nonce_be_bytes]`
+    ///
+    /// Use `streamflow_sdk::state::derive_metadata` to compute the metadata PDA address.
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx` - Accounts that will be used on Stream creation
+    /// * `start_time` - Unix Timestamp for Stream start, can be 0 to use current time
+    /// * `net_amount_deposited` - Amount of Tokens to deposit to the Stream
+    /// * `period` - Unlock Period in Seconds, tokens will be unlocked every `period` seconds
+    /// * `amount_per_period` - Unlock Amount, every `period` we unlock `amount_per_period` tokens
+    /// * `cliff` - Unix Timestamp of Cliff (first unlock), can be 0 to use current time or not use at all
+    /// * `cliff_amount` - Cliff Amount of tokens, can 0 to not use Cliff at all
+    /// * `cancelable_by_sender` - Whether Stream can by cancelled by Sender
+    /// * `cancelable_by_recipient` - Whether Stream can be cancelled by Recipient
+    /// * `automatic_withdrawal` - Whether automatic withdrawals are enabled
+    /// * `transferable_by_sender` - Whether Stream can be transferred by Sender
+    /// * `transferable_by_recipient` - Whether Stream can be transferred by Recipient
+    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens) by Sender
+    /// * `stream_name` - Name of the Stream
+    /// * `withdraw_frequency` - if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
+    /// * `recipient` - Pubkey of the Stream recipient
+    /// * `partner` - Pubkey of the partner treasury
+    /// * `pausable` - Whether Stream can be paused by Sender
+    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the Stream via `update` method
+    /// * `nonce` - Nonce used for PDA derivation of the metadata account
+    #[allow(unused_variables)]
+    pub fn create_unchecked_v2(
+        ctx: Context<CreateUnchecked>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey,
+        pausable: bool,
+        can_update_rate: bool,
+        nonce: u32,
     ) -> Result<()> { Ok(()) }
 
     /// Create a Stream and skip some optional checks
@@ -336,6 +444,61 @@ pub mod streamflow_sdk {
         partner: Pubkey,
         pausable: bool,
         can_update_rate: bool,
+    ) -> Result<()> { Ok(()) }
+
+    /// Create a Stream with PDA-based metadata, skip some optional checks, and use a separate payer (v2)
+    ///
+    /// This is similar to `create_unchecked_with_payer` but uses a PDA for the metadata account
+    /// instead of requiring a pre-initialized account. The metadata PDA is derived from:
+    /// `["strm-met", mint, payer, nonce_be_bytes]`
+    ///
+    /// Use `streamflow_sdk::state::derive_metadata` to compute the metadata PDA address.
+    /// Note: for this instruction, pass the `payer` pubkey (not `sender`) to `derive_metadata`.
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx` - Accounts that will be used on Stream creation
+    /// * `start_time` - Unix Timestamp for Stream start, can be 0 to use current time
+    /// * `net_amount_deposited` - Amount of Tokens to deposit to the Stream
+    /// * `period` - Unlock Period in Seconds, tokens will be unlocked every `period` seconds
+    /// * `amount_per_period` - Unlock Amount, every `period` we unlock `amount_per_period` tokens
+    /// * `cliff` - Unix Timestamp of Cliff (first unlock), can be 0 to use current time or not use at all
+    /// * `cliff_amount` - Cliff Amount of tokens, can 0 to not use Cliff at all
+    /// * `cancelable_by_sender` - Whether Stream can by cancelled by Sender
+    /// * `cancelable_by_recipient` - Whether Stream can be cancelled by Recipient
+    /// * `automatic_withdrawal` - Whether automatic withdrawals are enabled
+    /// * `transferable_by_sender` - Whether Stream can be transferred by Sender
+    /// * `transferable_by_recipient` - Whether Stream can be transferred by Recipient
+    /// * `can_topup` - Whether Stream can be topped up (deposit additional tokens) by Sender
+    /// * `stream_name` - Name of the Stream
+    /// * `withdraw_frequency` - if `automatic_withdrawal` is on, every `withdraw_frequency` seconds **all unlocked** tokens will be sent to the recipient
+    /// * `recipient` - Pubkey of the Stream recipient
+    /// * `partner` - Pubkey of the partner treasury
+    /// * `pausable` - Whether Stream can be paused by Sender
+    /// * `can_update_rate` - Whether Sender can update `amount_per_period` value of the Stream via `update` method
+    /// * `nonce` - Nonce used for PDA derivation of the metadata account
+    #[allow(unused_variables)]
+    pub fn create_unchecked_with_payer_v2(
+        ctx: Context<CreateUncheckedWithPayer>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey,
+        pausable: bool,
+        can_update_rate: bool,
+        nonce: u32,
     ) -> Result<()> { Ok(()) }
 
     /// Update a Stream
@@ -445,7 +608,7 @@ pub mod streamflow_sdk {
     }
 }
 
-/// Accounts expected in create instruction
+/// Accounts expected in create and create_v2 instructions
 #[derive(Accounts)]
 pub struct Create<'info> {
     /// Wallet of the contract creator.
@@ -458,7 +621,9 @@ pub struct Create<'info> {
     #[account(mut)]
     pub recipient: AccountInfo<'info>,
     /// The account holding the contract parameters.
-    /// Expects empty (non-initialized) account that should also be a signer.
+    /// - create: should be an ephemeral signer;
+    /// - create_v2: a PDA, use `streamflow_sdk::state::derive_metadata` to derive.
+    ///   Derivation path: `["strm-met", mint, sender, nonce_be_bytes]`
     #[account(mut, signer)]
     pub metadata: AccountInfo<'info>,
     /// The escrow account holding the funds.
@@ -510,7 +675,7 @@ pub struct Create<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Accounts expected in create_unchecked instruction
+/// Accounts expected in create_unchecked and create_unchecked_v2 instructions
 #[derive(Accounts)]
 pub struct CreateUnchecked<'info> {
     /// Wallet of the contract creator.
@@ -520,7 +685,9 @@ pub struct CreateUnchecked<'info> {
     #[account(mut)]
     pub sender_tokens: AccountInfo<'info>,
     /// The account holding the contract parameters.
-    /// Expects account initialized with `streamflow_sdk::state::METADATA_LEN` bytes length and assigned program ID.
+    /// - create_unchecked: expects account initialized with `streamflow_sdk::state::METADATA_LEN` bytes length and assigned program ID.
+    /// - create_unchecked_v2: a PDA that will be created, use `streamflow_sdk::state::derive_metadata` to derive.
+    ///   Derivation path: `["strm-met", mint, sender, nonce_be_bytes]`
     #[account(mut)]
     pub metadata: AccountInfo<'info>,
     /// The escrow account holding the funds.
@@ -550,7 +717,7 @@ pub struct CreateUnchecked<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Accounts expected in create_unchecked instruction
+/// Accounts expected in create_unchecked_with_payer and create_unchecked_with_payer_v2 instructions
 #[derive(Accounts)]
 pub struct CreateUncheckedWithPayer<'info> {
     /// Wallet of the payer account to pay for accounts creation
@@ -563,7 +730,9 @@ pub struct CreateUncheckedWithPayer<'info> {
     #[account(mut)]
     pub sender_tokens: AccountInfo<'info>,
     /// The account holding the contract parameters.
-    /// Expects account initialized with 1104 bytes.
+    /// - create_unchecked_with_payer: expects account initialized with 1104 bytes.
+    /// - create_unchecked_with_payer_v2: a PDA that will be created, use `streamflow_sdk::state::derive_metadata` to derive.
+    ///   Derivation path: `["strm-met", mint, payer, nonce_be_bytes]` (note: uses `payer`, not `sender`)
     #[account(mut)]
     pub metadata: AccountInfo<'info>,
     /// The escrow account holding the funds.

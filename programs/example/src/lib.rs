@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -8,6 +9,7 @@ use streamflow_sdk;
 use streamflow_sdk::cpi::accounts::{
     Create as CpiCreate,
     CreateUnchecked as CpiCreateUnchecked,
+    CreateUncheckedWithPayer as CpiCreateUncheckedWithPayer,
     Update as CpiUpdate,
     Withdraw as CpiWithdraw,
     Topup as CpiTopup,
@@ -88,6 +90,194 @@ pub mod example_program {
             withdraw_frequency,
             pausable,
             can_update_rate
+        )
+    }
+
+    pub fn create_v2(
+        ctx: Context<Create>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        pausable: bool,
+        can_update_rate: bool,
+        nonce: u32,
+    ) -> Result<()> {
+        msg!("Got create_v2");
+        let accs = CpiCreate {
+            sender: ctx.accounts.sender.to_account_info(),
+            sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
+            recipient: ctx.accounts.recipient.to_account_info(),
+            recipient_tokens: ctx.accounts.recipient_tokens.to_account_info(),
+            metadata: ctx.accounts.metadata.to_account_info(),
+            escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
+            streamflow_treasury: ctx.accounts.streamflow_treasury.to_account_info(),
+            streamflow_treasury_tokens: ctx.accounts.streamflow_treasury_tokens.to_account_info(),
+            withdrawor: ctx.accounts.withdrawor.to_account_info(),
+            partner: ctx.accounts.partner.to_account_info(),
+            partner_tokens: ctx.accounts.partner_tokens.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
+            rent: ctx.accounts.rent.to_account_info(),
+            timelock_program: ctx.accounts.streamflow_program.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+            associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        };
+
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+        streamflow_sdk::cpi::create_v2(
+            cpi_ctx,
+            start_time,
+            net_amount_deposited,
+            period,
+            amount_per_period,
+            cliff,
+            cliff_amount,
+            cancelable_by_sender,
+            cancelable_by_recipient,
+            automatic_withdrawal,
+            transferable_by_sender,
+            transferable_by_recipient,
+            can_topup,
+            stream_name,
+            withdraw_frequency,
+            pausable,
+            can_update_rate,
+            nonce,
+        )
+    }
+
+    pub fn create_unchecked_v2(
+        ctx: Context<CreateUnchecked>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey,
+        pausable: bool,
+        can_update_rate: bool,
+        nonce: u32,
+    ) -> Result<()> {
+        let accs = CpiCreateUnchecked {
+            sender: ctx.accounts.sender.to_account_info(),
+            sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
+            metadata: ctx.accounts.metadata.to_account_info(),
+            escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
+            withdrawor: ctx.accounts.withdrawor.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
+            rent: ctx.accounts.rent.to_account_info(),
+            timelock_program: ctx.accounts.streamflow_program.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        };
+
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+        streamflow_sdk::cpi::create_unchecked_v2(
+            cpi_ctx,
+            start_time,
+            net_amount_deposited,
+            period,
+            amount_per_period,
+            cliff,
+            cliff_amount,
+            cancelable_by_sender,
+            cancelable_by_recipient,
+            automatic_withdrawal,
+            transferable_by_sender,
+            transferable_by_recipient,
+            can_topup,
+            stream_name,
+            withdraw_frequency,
+            recipient,
+            partner,
+            pausable,
+            can_update_rate,
+            nonce,
+        )
+    }
+
+    pub fn create_unchecked_with_payer_v2(
+        ctx: Context<CreateUncheckedWithPayer>,
+        start_time: u64,
+        net_amount_deposited: u64,
+        period: u64,
+        amount_per_period: u64,
+        cliff: u64,
+        cliff_amount: u64,
+        cancelable_by_sender: bool,
+        cancelable_by_recipient: bool,
+        automatic_withdrawal: bool,
+        transferable_by_sender: bool,
+        transferable_by_recipient: bool,
+        can_topup: bool,
+        stream_name: [u8; 64],
+        withdraw_frequency: u64,
+        recipient: Pubkey,
+        partner: Pubkey,
+        pausable: bool,
+        can_update_rate: bool,
+        nonce: u32,
+    ) -> Result<()> {
+        let accs = CpiCreateUncheckedWithPayer {
+            payer: ctx.accounts.payer.to_account_info(),
+            sender: ctx.accounts.sender.to_account_info(),
+            sender_tokens: ctx.accounts.sender_tokens.to_account_info(),
+            metadata: ctx.accounts.metadata.to_account_info(),
+            escrow_tokens: ctx.accounts.escrow_tokens.to_account_info(),
+            withdrawor: ctx.accounts.withdrawor.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            fee_oracle: ctx.accounts.fee_oracle.to_account_info(),
+            rent: ctx.accounts.rent.to_account_info(),
+            timelock_program: ctx.accounts.streamflow_program.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        };
+
+        let cpi_ctx = CpiContext::new(ctx.accounts.streamflow_program.to_account_info(), accs);
+        streamflow_sdk::cpi::create_unchecked_with_payer_v2(
+            cpi_ctx,
+            start_time,
+            net_amount_deposited,
+            period,
+            amount_per_period,
+            cliff,
+            cliff_amount,
+            cancelable_by_sender,
+            cancelable_by_recipient,
+            automatic_withdrawal,
+            transferable_by_sender,
+            transferable_by_recipient,
+            can_topup,
+            stream_name,
+            withdraw_frequency,
+            recipient,
+            partner,
+            pausable,
+            can_update_rate,
+            nonce,
         )
     }
 
@@ -325,6 +515,36 @@ pub struct Create<'info> {
 
 #[derive(Accounts)]
 pub struct CreateUnchecked<'info> {
+    #[account(mut)]
+    pub sender: Signer<'info>,
+    #[account(
+        associated_token::mint = mint,
+        associated_token::authority = sender,
+    )]
+    pub sender_tokens: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
+    /// CHECK: The account holding the vesting parameters.
+    pub metadata: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: The escrow account holding the funds
+    pub escrow_tokens: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: Delegate account for automatically withdrawing contracts.
+    pub withdrawor: UncheckedAccount<'info>,
+    pub mint: Box<Account<'info, Mint>>,
+    /// CHECK: Internal program that handles fees for specified partners.
+    pub fee_oracle: UncheckedAccount<'info>,
+    pub rent: Sysvar<'info, Rent>,
+    /// CHECK: Streamflow protocol (alias timelock) program account.
+    pub streamflow_program: UncheckedAccount<'info>,
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CreateUncheckedWithPayer<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
     #[account(mut)]
     pub sender: Signer<'info>,
     #[account(

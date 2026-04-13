@@ -9,6 +9,10 @@ pub const FEE_ORACLE_ADDRESS: &str = "B743wFVk2pCYhV91cn287e1xY7f1vt4gdY48hhNiuQ
 
 /// Prefix used to derive Escrow account address
 pub const ESCROW_SEED_PREFIX: &[u8] = b"strm";
+/// Prefix used to derive Metadata PDA address (v2)
+pub const METADATA_SEED_PREFIX: &[u8] = b"strm-met";
+/// Fixed padding to account for additional fields added to CreateParams
+pub const CREATE_PARAMS_PADDING: usize = 121;
 /// Size of Stream metadata
 pub const METADATA_LEN: usize = 1104;
 
@@ -18,6 +22,19 @@ pub const STREAMFLOW_DEVNET_PROGRAM_ID: &str = "HqDGZjaVRXJ9MGRQEw7qDc2rAr6iH1n1
 
 pub fn find_escrow_account(seed: &[u8], pid: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(&[ESCROW_SEED_PREFIX, seed], pid)
+}
+
+/// Derive metadata PDA address for create_v2 instructions.
+///
+/// Seeds: `["strm-met", mint, payer, nonce_be_bytes]`
+///
+/// For `create_v2`, `payer` is the sender.
+/// For `create_unchecked_with_payer_v2`, `payer` is the payer account.
+pub fn derive_metadata(mint: &Pubkey, payer: &Pubkey, nonce: u32, pid: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[METADATA_SEED_PREFIX, mint.as_ref(), payer.as_ref(), nonce.to_be_bytes().as_ref()],
+        pid,
+    )
 }
 
 /// Calculate fee amount from a provided amount
@@ -71,6 +88,12 @@ pub struct CreateParams {
     pub pausable: bool,
     /// Whether the contract can update release amount
     pub can_update_rate: bool,
+    /// used as padding len in serialization, added for backwards compatibility
+    pub ghost2: u32,
+    /// Whether the contract metadata is a PDA (v2)
+    pub is_pda: bool,
+    /// Nonce for PDA-based metadata derivation (v2)
+    pub nonce: u32,
 }
 
 /// Struct that represents Stream Contract stored on chain, this account **DOES NOT** have a discriminator.
@@ -137,8 +160,8 @@ pub struct Contract {
     /// The stream instruction
     pub ix: CreateParams,
     /// Padding for `ix: CreateParams` to allow for future upgrades.
-    pub ix_padding: Vec<u8>,
-    /// Stream is closed
+    pub ix_padding: [u8; CREATE_PARAMS_PADDING],
+    /// Whether Stream is closed
     pub closed: bool,
     /// time of the current pause. 0 signifies unpaused state
     pub current_pause_start: u64,
@@ -149,6 +172,21 @@ pub struct Contract {
     pub last_rate_change_time: u64,
     /// Accumulated unlocked tokens before last rate change (excluding cliff_amount)
     pub funds_unlocked_at_last_rate_change: u64,
+    /// Creation SOL fee
+    pub creation_fee: u32,
+    /// Whether SOL fees have been claimed from the metadata account
+    pub creation_fee_claimed: bool,
+    /// Auto-claim SOL fee
+    pub auto_claim_fee: u32,
+    /// Whether SOL fees have been claimed from the metadata account
+    pub auto_claim_fee_claimed: bool,
+    /// Pubkey of the old (drained) metadata account, used for escrow PDA derivation.
+    /// Zero (default) means this IS the original metadata -- escrow derives from self.
+    pub old_metadata: Pubkey,
+    /// Wallet that paid for the Contract creation, may be used for PDA derivation
+    pub payer: Pubkey,
+    /// Bump used for the Contract Metadata if it's a PDA
+    pub bump: u8,
 }
 
 impl Contract {
