@@ -2613,7 +2613,7 @@ dependencies = [
 
 [[package]]
 name = "streamflow-sdk"
-version = "0.13.0-alpha.2"
+version = "0.13.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
