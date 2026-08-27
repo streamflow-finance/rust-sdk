@@ -209,6 +209,16 @@ impl Contract {
         self.pause_cumulative
     }
 
+    /// Calculate time of the last unlock, no partial unlocks are allowed
+    pub fn last_unlock_time(&self, now: u64) -> u64 {
+        let pause_time = self.pause_time(now);
+        let effective_stream_start = self.effective_start_time();
+        let stream_duration = now - effective_stream_start - pause_time;
+        let periods_passed = stream_duration / self.ix.period;
+
+        effective_stream_start + periods_passed * self.ix.period
+    }
+
     /// amount available that is vested (excluding cliff)
     pub fn vested_available(&self, now: u64) -> u64 {
         let start = self.start_time();

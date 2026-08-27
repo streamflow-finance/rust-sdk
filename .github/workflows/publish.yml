@@ -1,0 +1,67 @@
+name: Publish streamflow-sdk
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Package and verify only, do not publish to crates.io"
+        type: boolean
+        default: true
+
+env:
+  CARGO_TERM_COLOR: always
+  MANIFEST: programs/streamflow-sdk/Cargo.toml
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    permissions:
+      # Required for crates.io Trusted Publishing (OIDC token exchange).
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install stable toolchain
+        run: |
+          rustup update --no-self-update stable
+          rustup default stable
+          rustc --version
+
+      - name: Resolve crate version
+        id: version
+        run: |
+          version=$(cargo metadata --no-deps --format-version 1 --manifest-path "$MANIFEST" \
+            | jq -r '.packages[] | select(.name == "streamflow-sdk") | .version')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Crate version: $version"
+
+      - name: Check tag matches crate version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$tag_version" != "${{ steps.version.outputs.version }}" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match Cargo.toml version ${{ steps.version.outputs.version }}" >&2
+            exit 1
+          fi
+
+      - name: Build
+        run: cargo build --manifest-path "$MANIFEST" --all-features
+
+      - name: Package
+        run: cargo package --manifest-path "$MANIFEST"
+
+      - name: Authenticate to crates.io (Trusted Publishing)
+        id: auth
+        if: github.event_name == 'push' || inputs.dry_run == false
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+
+      - name: Publish
+        if: github.event_name == 'push' || inputs.dry_run == false
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish --manifest-path "$MANIFEST"

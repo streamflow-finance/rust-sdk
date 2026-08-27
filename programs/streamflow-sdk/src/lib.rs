@@ -801,7 +801,7 @@ pub struct UnPause<'info> {
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
     /// Wallet of the contract withdrawor.
-    #[account()]
+    #[account(mut)]
     pub authority: Signer<'info>,
     #[account(mut)]
     /// Wallet address of the recipient.
