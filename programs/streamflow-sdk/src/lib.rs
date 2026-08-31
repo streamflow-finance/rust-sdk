@@ -513,6 +513,7 @@ pub mod streamflow_sdk {
     /// * `transferable_by_sender` - Whether to disable transfer by Sender, only disabling is possible.
     /// * `transferable_by_recipient` - Whether to enable transfer by Recipient, only enabling is possible.
     /// * `cancelable_by_sender` - Whether to disable cancel by Sender, only disabling is possible.
+    /// * `stream_name` - New name of the Stream, only the Sender can rename it.
     #[allow(unused_variables)]
     pub fn update(
         ctx: Context<Update>,
@@ -522,6 +523,7 @@ pub mod streamflow_sdk {
         transferable_by_sender: Option<bool>,
         transferable_by_recipient: Option<bool>,
         cancelable_by_sender: Option<bool>,
+        stream_name: Option<[u8; 64]>,
     ) -> Result<()> {
         Ok(())
     }

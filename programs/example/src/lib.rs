@@ -289,6 +289,7 @@ pub mod example_program {
         transferable_by_sender: Option<bool>,
         transferable_by_recipient: Option<bool>,
         cancelable_by_sender: Option<bool>,
+        stream_name: Option<[u8; 64]>,
     ) -> Result<()> {
         let accs = CpiUpdate {
             sender: ctx.accounts.sender.to_account_info(),
@@ -306,6 +307,7 @@ pub mod example_program {
             transferable_by_sender,
             transferable_by_recipient,
             cancelable_by_sender,
+            stream_name,
         )
     }
 
