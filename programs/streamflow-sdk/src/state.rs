@@ -262,3 +262,347 @@ impl Contract {
         self.ix.cliff_amount
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Helpers for building a `Contract` and `CreateParams` with the fields that
+    // affect account-transition math. Anything not set here is irrelevant to the
+    // helpers under test, so we leave it as zero / default.
+
+    fn default_params() -> CreateParams {
+        CreateParams {
+            start_time: 0,
+            net_amount_deposited: 0,
+            period: 1,
+            amount_per_period: 0,
+            cliff: 0,
+            cliff_amount: 0,
+            cancelable_by_sender: false,
+            cancelable_by_recipient: false,
+            automatic_withdrawal: false,
+            transferable_by_sender: false,
+            transferable_by_recipient: false,
+            can_topup: false,
+            stream_name: [0u8; 64],
+            withdraw_frequency: 0,
+            ghost: 0,
+            pausable: false,
+            can_update_rate: false,
+            ghost2: 0,
+            is_pda: false,
+            nonce: 0,
+        }
+    }
+
+    fn contract_with(ix: CreateParams) -> Contract {
+        Contract {
+            magic: 0,
+            version: 1,
+            created_at: 0,
+            amount_withdrawn: 0,
+            canceled_at: 0,
+            end_time: 0,
+            last_withdrawn_at: 0,
+            sender: Pubkey::default(),
+            sender_tokens: Pubkey::default(),
+            recipient: Pubkey::default(),
+            recipient_tokens: Pubkey::default(),
+            mint: Pubkey::default(),
+            escrow_tokens: Pubkey::default(),
+            streamflow_treasury: Pubkey::default(),
+            streamflow_treasury_tokens: Pubkey::default(),
+            streamflow_fee_total: 0,
+            streamflow_fee_withdrawn: 0,
+            streamflow_fee_percent: 0.0,
+            partner: Pubkey::default(),
+            partner_tokens: Pubkey::default(),
+            partner_fee_total: 0,
+            partner_fee_withdrawn: 0,
+            partner_fee_percent: 0.0,
+            ix,
+            ix_padding: [0u8; CREATE_PARAMS_PADDING],
+            closed: false,
+            current_pause_start: 0,
+            pause_cumulative: 0,
+            last_rate_change_time: 0,
+            funds_unlocked_at_last_rate_change: 0,
+            creation_fee: 0,
+            creation_fee_claimed: false,
+            auto_claim_fee: 0,
+            auto_claim_fee_claimed: false,
+            old_metadata: Pubkey::default(),
+            payer: Pubkey::default(),
+            bump: 0,
+        }
+    }
+
+    // ---- start_time / effective_start_time ----
+
+    #[test]
+    fn start_time_returns_cliff_when_cliff_is_set() {
+        let mut ix = default_params();
+        ix.start_time = 100;
+        ix.cliff = 250;
+        let c = contract_with(ix);
+        assert_eq!(c.start_time(), 250);
+    }
+
+    #[test]
+    fn start_time_falls_back_to_start_when_cliff_is_zero() {
+        let mut ix = default_params();
+        ix.start_time = 100;
+        ix.cliff = 0;
+        let c = contract_with(ix);
+        assert_eq!(c.start_time(), 100);
+    }
+
+    #[test]
+    fn effective_start_time_uses_max_of_rate_change_and_start() {
+        // rate change before start_time() -> effective is start_time()
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.cliff = 0;
+        let mut c = contract_with(ix);
+        c.last_rate_change_time = 500;
+        assert_eq!(c.effective_start_time(), 1_000);
+
+        // rate change after start_time() -> effective is the rate change
+        c.last_rate_change_time = 1_500;
+        assert_eq!(c.effective_start_time(), 1_500);
+
+        // cliff takes precedence for start_time() but rate change can still push it out
+        let mut ix2 = default_params();
+        ix2.start_time = 1_000;
+        ix2.cliff = 800;
+        let mut c2 = contract_with(ix2);
+        c2.last_rate_change_time = 900;
+        assert_eq!(c2.start_time(), 800);
+        assert_eq!(c2.effective_start_time(), 900);
+    }
+
+    // ---- pause_time ----
+
+    #[test]
+    fn pause_time_returns_cumulative_when_not_paused() {
+        let mut c = contract_with(default_params());
+        c.pause_cumulative = 42;
+        c.current_pause_start = 0;
+        assert_eq!(c.pause_time(1_000_000), 42);
+    }
+
+    #[test]
+    fn pause_time_includes_open_pause_window() {
+        let mut c = contract_with(default_params());
+        c.pause_cumulative = 10;
+        c.current_pause_start = 100; // paused at t=100
+        // now=250 -> open pause has lasted 150s, total = 10 + 150 = 160
+        assert_eq!(c.pause_time(250), 160);
+    }
+
+    // ---- last_unlock_time ----
+
+    #[test]
+    fn last_unlock_time_advances_in_full_periods() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.period = 60;
+        ix.amount_per_period = 1;
+        let c = contract_with(ix);
+        // (2500 - 1000) = 1500s; 1500 / 60 = 25 periods; last unlock at 1000 + 25*60 = 2500
+        assert_eq!(c.last_unlock_time(2_500), 2_500);
+        // 25 periods + 1s -> still 2500 (no partial unlock)
+        assert_eq!(c.last_unlock_time(2_501), 2_500);
+        // 26 full periods -> 1000 + 26*60 = 2560
+        assert_eq!(c.last_unlock_time(2_560), 2_560);
+    }
+
+    #[test]
+    fn last_unlock_time_respects_pause_cumulative() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.period = 60;
+        let mut c = contract_with(ix);
+        c.pause_cumulative = 30;
+        // effective stream duration = 1600 - 1000 - 30 = 570; 570/60 = 9; 1000 + 9*60 = 1540
+        assert_eq!(c.last_unlock_time(1_600), 1_540);
+    }
+
+    // ---- vested_available ----
+
+    #[test]
+    fn vested_available_zero_when_pause_started_before_start_and_still_active() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.period = 60;
+        ix.amount_per_period = 10;
+        let mut c = contract_with(ix);
+        c.current_pause_start = 500; // paused at 500, before start_time
+        // pause started before start AND still active (current_pause_start != 0)
+        assert_eq!(c.vested_available(2_000), 0);
+    }
+
+    #[test]
+    fn vested_available_uses_rate_change_baseline() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.period = 100;
+        ix.amount_per_period = 5;
+        let mut c = contract_with(ix);
+        // at t=2000 (without rate change): (2000-1000)/100 * 5 = 50
+        assert_eq!(c.vested_available(2_000), 50);
+        // rate change at t=1500 adds a baseline of 25 already-unlocked tokens
+        c.last_rate_change_time = 1_500;
+        c.funds_unlocked_at_last_rate_change = 25;
+        // effective start = 1500, effective duration = 2000-1500 = 500, periods = 5, +25 baseline = 50
+        assert_eq!(c.vested_available(2_000), 50);
+    }
+
+    // ---- cliff_available ----
+
+    #[test]
+    fn cliff_available_zero_before_cliff() {
+        let mut ix = default_params();
+        ix.cliff = 1_000;
+        ix.cliff_amount = 123;
+        let c = contract_with(ix);
+        assert_eq!(c.cliff_available(999), 0);
+        assert_eq!(c.cliff_available(0), 0);
+    }
+
+    #[test]
+    fn cliff_available_returns_cliff_amount_at_and_after_cliff() {
+        let mut ix = default_params();
+        ix.cliff = 1_000;
+        ix.cliff_amount = 123;
+        let c = contract_with(ix);
+        assert_eq!(c.cliff_available(1_000), 123);
+        assert_eq!(c.cliff_available(2_000), 123);
+    }
+
+    #[test]
+    fn cliff_available_zero_if_pause_started_before_cliff_and_still_active() {
+        let mut ix = default_params();
+        ix.cliff = 1_000;
+        ix.cliff_amount = 123;
+        let mut c = contract_with(ix);
+        c.current_pause_start = 500;
+        // pause started before cliff and still active
+        assert_eq!(c.cliff_available(2_000), 0);
+    }
+
+    // ---- available_to_claim ----
+
+    #[test]
+    fn available_to_claim_zero_before_start() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.net_amount_deposited = 1_000;
+        ix.period = 100;
+        ix.amount_per_period = 10;
+        let c = contract_with(ix);
+        assert_eq!(c.available_to_claim(500, 0.0), 0);
+    }
+
+    #[test]
+    fn available_to_claim_zero_when_already_fully_withdrawn() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.net_amount_deposited = 1_000;
+        ix.period = 100;
+        ix.amount_per_period = 10;
+        let mut c = contract_with(ix);
+        c.amount_withdrawn = 1_000;
+        assert_eq!(c.available_to_claim(2_000, 0.0), 0);
+    }
+
+    #[test]
+    fn available_to_claim_zero_when_zero_deposited() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.net_amount_deposited = 0;
+        let c = contract_with(ix);
+        assert_eq!(c.available_to_claim(2_000, 0.0), 0);
+    }
+
+    #[test]
+    fn available_to_claim_returns_remainder_after_end_time_when_not_paused() {
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.net_amount_deposited = 1_000;
+        ix.period = 100;
+        ix.amount_per_period = 10;
+        let mut c = contract_with(ix);
+        c.end_time = 2_000;
+        c.amount_withdrawn = 250;
+        // at/after end_time with no open pause: net_amount_deposited - amount_withdrawn
+        assert_eq!(c.available_to_claim(2_000, 0.0), 750);
+        assert_eq!(c.available_to_claim(5_000, 0.0), 750);
+    }
+
+    #[test]
+    fn available_to_claim_subtracts_amount_withdrawn_for_partial_vest() {
+        // `fee_percentage` multiplies the vested/cliff amount via
+        // calculate_fee_from_amount, so passing 100.0 makes that multiplication
+        // the identity. This isolates the "vested + cliff - amount_withdrawn"
+        // logic under test without coupling to a specific fee rate.
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.net_amount_deposited = 10_000;
+        ix.period = 100;
+        ix.amount_per_period = 10; // 10 tokens per 100s
+        let mut c = contract_with(ix);
+        c.end_time = 10_000; // still streaming at now=1500, avoids the end_time early-return
+        c.amount_withdrawn = 30;
+        // at t=1500: vested_available = (1500-1000)/100 * 10 = 50; cliff=0; claim = 50 - 30 = 20
+        assert_eq!(c.available_to_claim(1_500, 100.0), 20);
+    }
+
+    #[test]
+    fn available_to_claim_includes_cliff_amount() {
+        // fee_percentage=100.0 is the identity multiplier (see partial-vest test),
+        // so the assertion reflects raw vested + cliff - withdrawn.
+        let mut ix = default_params();
+        ix.start_time = 1_000;
+        ix.cliff = 1_200;
+        ix.cliff_amount = 200;
+        ix.net_amount_deposited = 10_000;
+        ix.period = 100;
+        ix.amount_per_period = 10;
+        let mut c = contract_with(ix);
+        c.end_time = 10_000; // avoid the end_time early-return at now=1200/1300
+        // exactly at cliff: vested = 0, cliff = 200, claim = 200
+        assert_eq!(c.available_to_claim(1_200, 100.0), 200);
+        // 100s after cliff: vested = 1*10 = 10, cliff = 200, claim = 210
+        assert_eq!(c.available_to_claim(1_300, 100.0), 210);
+    }
+
+    // ---- calculate_fee_from_amount ----
+
+    #[test]
+    fn calculate_fee_zero_for_zero_or_negative_percent() {
+        assert_eq!(calculate_fee_from_amount(1_000_000, 0.0), 0);
+        assert_eq!(calculate_fee_from_amount(1_000_000, -1.5), 0);
+    }
+
+    #[test]
+    fn calculate_fee_applies_percentage() {
+        // 1% of 1_000_000 = 10_000
+        assert_eq!(calculate_fee_from_amount(1_000_000, 1.0), 10_000);
+        // 0.5% of 1_000_000 = 5_000
+        assert_eq!(calculate_fee_from_amount(1_000_000, 0.5), 5_000);
+        // 100% of 1_000_000 = 1_000_000
+        assert_eq!(calculate_fee_from_amount(1_000_000, 100.0), 1_000_000);
+    }
+
+    #[test]
+    fn calculate_fee_rounds_down() {
+        // 1% of 7 = 0.07, but the function uses integer math with precision 1e6.
+        // 1% -> factor = 10_000; amount * 10_000 / 1_000_000 = 7 * 10_000 / 1_000_000 = 0
+        assert_eq!(calculate_fee_from_amount(7, 1.0), 0);
+        // 50% of 9 = 4.5 -> rounds down to 4
+        // factor = 500_000; 9 * 500_000 / 1_000_000 = 4
+        assert_eq!(calculate_fee_from_amount(9, 50.0), 4);
+    }
+}
